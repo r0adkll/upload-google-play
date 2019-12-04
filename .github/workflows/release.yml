@@ -18,9 +18,12 @@ jobs:
         git add -A .
 
     - name: Commit changes
-        with: gha-utilities/workspace-commit@v0.0.2
-          message: Updated build files
-          all: true
+      uses: gha-utilities/workspace-commit@v0.0.2
+      with:
+        message: Updated build files
+        author: ${{ github.author }}
+        email: veedubusc@gmail.com
+        all: true
 
     - name: Push changes
       uses: ad-m/github-push-action@master
