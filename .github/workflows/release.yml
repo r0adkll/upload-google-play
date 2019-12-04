@@ -11,24 +11,6 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Build Action
-      run: |
-        npm ci
-        npm run build
-        git add -A .
-
-    - name: Commit changes
-      uses: gha-utilities/workspace-commit@v0.0.2
-      with:
-        message: Updated build files
-        all: true
-
-    - name: Push changes
-      uses: ad-m/github-push-action@master
-      with:
-        github_token: ${{ secrets.GITHUB_TOKEN }}
-        branch: master
-
     - name: Update v1 Tag
       uses: hole19/git-tag-action@master
       env:
