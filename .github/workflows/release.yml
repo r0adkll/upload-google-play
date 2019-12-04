@@ -11,6 +11,11 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Configure Git
+      run: |
+        git config --global user.email "veedubusc@gmail.com"
+        git config --global user.name "Drew Heavner"
+
     - name: Build Action
       run: |
         npm ci
