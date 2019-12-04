@@ -1,0 +1,24 @@
+name: "Tag & Deploy Action"
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v1
+
+    - name: Build Action
+      run: |
+        npm ci
+        npm run build
+
+    - name: Update v1 Tag
+      run: |
+        npm prune --production
+        git commit -m "Pruning Node Modules, Preparing for release"
+        git tag -fa v1 -m "Update v1 tag"
+        git push origin --force --tags
