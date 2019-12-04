@@ -21,8 +21,6 @@ jobs:
       uses: gha-utilities/workspace-commit@v0.0.2
       with:
         message: Updated build files
-        author: ${{ github.author }}
-        email: veedubusc@gmail.com
         all: true
 
     - name: Push changes
