@@ -11,20 +11,25 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
-    - name: Configure Git
-      run: |
-        git config --global user.email "veedubusc@gmail.com"
-        git config --global user.name "Drew Heavner"
-
     - name: Build Action
       run: |
         npm ci
         npm run build
+        git add -A .
+
+    - name: Commit changes
+        with: gha-utilities/workspace-commit@v0.0.2
+          message: Updated build files
+          all: true
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.GITHUB_TOKEN }}
+        branch: master
 
     - name: Update v1 Tag
-      run: |
-        npm prune --production
-        git add .
-        git commit -m "Pruning Node Modules, Preparing for release"
-        git tag -fa v1 -m "Update v1 tag"
-        git push origin --force --tags
+      uses: hole19/git-tag-action@master
+      env:
+        TAG: v1
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
