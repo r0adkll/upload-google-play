@@ -24,6 +24,7 @@ jobs:
     - name: Update v1 Tag
       run: |
         npm prune --production
+        git add .
         git commit -m "Pruning Node Modules, Preparing for release"
         git tag -fa v1 -m "Update v1 tag"
         git push origin --force --tags
