@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script defer src="https://cdn.rawgit.com/mathiasbynens/utf8.js/5566334e/utf8.js"></script>
+<script type="module">
+</script>
+<script type="module">
+  import './polyfill.js';
+  import 'https://cdn.rawgit.com/inexorabletash/text-encoding/b98ab30b/lib/encoding.js';
+  const polyfill = module.exports;
+
+  import './text.js';
+
+  const runs = 1;
+  const dataUrl = './utf8_sequence_0-0xffff_assigned_printable.txt';
+
+  (async function() {
+    let text = await window.fetch(dataUrl).then((data) => data.text());
+    text = text.substr(0, 10000);
+
+    function testEncodeDecode(name, tenc, tdec) {
+      console.time(name + '.TextEncoder');
+      let saved;
+      const encoder = new tenc();
+      for (let i = 0; i < runs; ++i) {
+        const out = encoder.encode(text);
+        saved = out;
+      }
+      console.info('got output', saved);
+      console.timeEnd(name + '.TextEncoder');
+
+      console.time(name + '.TextDecoder');
+      const decoder = new tdec();
+      for (let i = 0; i < runs; ++i) {
+        const out = decoder.decode(saved);
+        output = out;
+      }
+      console.timeEnd(name + '.TextDecoder');
+    }
+
+    let saved, output;
+
+    console.time('utf8.encode');
+    for (let i = 0; i < runs; ++i) {
+      const s = utf8.encode(text);
+      saved = s;
+    }
+    console.timeEnd('utf8.encode');
+
+    console.time('utf8.decode');
+    for (let i = 0; i < runs; ++i) {
+      const out = utf8.decode(saved);
+      output = out;
+    }
+    console.timeEnd('utf8.decode');
+    if (output !== text) {
+      throw new Error('utf8 got wrong answer');
+    }
+
+
+    testEncodeDecode('native', TextEncoder, TextDecoder);
+    testEncodeDecode('fast', TextEncoderPolyfill, TextDecoderPolyfill);
+    testEncodeDecode('polyfill', polyfill.TextEncoder, polyfill.TextDecoder);
+
+  }());
+
+</script>
+</head>
+</html>

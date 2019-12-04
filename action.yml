@@ -1,10 +1,29 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'Upload Android Release to Play Store'
+description: 'An action to upload a signed Android release (.apk or .aab) to the Google Play Store Developer Console'
+author: 'r0adkll'
+branding:
+  icon: 'truck'
+  color: 'orange'
 inputs:
-  myInput:              # change this
-    description: 'input description here'
-    default: 'default value if applicable'
+  serviceAccountJson:
+    description: 'The service account json private key file to authorize the upload request'
+    required: true
+  packageName:
+    description: 'The package name, or Application Id, of the app you are uploading'
+    required: true
+  releaseFile:
+    description: 'The Android release file to upload (.apk or .aab)'
+    required: true
+  track:
+    description: 'The track in which you want to assign the uploaded app.'
+    default: 'production'
+    required: true
+  userFraction:
+    description: 'Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive).'
+  whatsNewDirectory:
+    description: 'The directory of localized whats new files'
+  mappingFile:
+    description: 'The mapping.txt file used to de-obfuscate your stack traces from crash reports'
 runs:
   using: 'node12'
   main: 'lib/main.js'

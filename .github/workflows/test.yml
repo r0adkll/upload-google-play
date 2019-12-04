@@ -1,4 +1,4 @@
-name: "Test typescript-action"
+name: "Tag & Deploy Action"
 on:
   pull_request:
   push:
@@ -15,6 +15,3 @@ jobs:
     - run: npm ci
     - run: npm run build
     - run: npm test
-    - uses: ./
-      with: 
-        milliseconds: 1000
