@@ -34,12 +34,12 @@ async function run() {
             return
         }
 
-        if (whatsNewDir != undefined && !fs.existsSync(whatsNewDir)) {
+        if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
             return
         }
 
-        if (mappingFile != undefined && !fs.existsSync(mappingFile)) {
+        if (mappingFile != undefined && mappingFile.length > 0 && !fs.existsSync(mappingFile)) {
             core.setFailed(`Unable to find 'mappingFile' @ ${mappingFile}`);
             return
         }
@@ -58,7 +58,7 @@ async function run() {
             mappingFile: mappingFile
         }, releaseFile);
 
-        core.debug('Finished App Release!')
+        console.log(`Finished uploading ${releaseFile} to the Play Store`)
     } catch (error) {
         core.setFailed(error.message)
     }

@@ -106,7 +106,7 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
 }
 
 async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
-    if (whatsNewDir != undefined) {
+    if (whatsNewDir != undefined && whatsNewDir.length > 0) {
         const releaseNotes = fs.readdirSync(whatsNewDir).filter(value => /whatsnew-*-*/.test(value));
         const pattern = /whatsnew-(?<local>.*-.*)/.compile();
 
@@ -136,7 +136,7 @@ async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promi
 }
 
 async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options: EditOptions) {
-    if (options.mappingFile != undefined) {
+    if (options.mappingFile != undefined && options.mappingFile.length > 0) {
         const mapping = readFileSync(options.mappingFile, 'utf-8');
         if (mapping != undefined) {
             core.debug(`[${appEdit.id}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Proguard mapping file @ ${options.mappingFile}`);
