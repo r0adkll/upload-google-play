@@ -20,10 +20,13 @@ inputs:
     required: true
   userFraction:
     description: 'Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive).'
+    required: false
   whatsNewDirectory:
     description: 'The directory of localized whats new files'
+    required: false
   mappingFile:
     description: 'The mapping.txt file used to de-obfuscate your stack traces from crash reports'
+    required: false
 runs:
   using: 'node12'
   main: 'lib/main.js'

@@ -1,4 +1,5 @@
 import * as core from '@actions/core';
+import * as fs from "fs";
 import {uploadRelease} from "./edits";
 const {google} = require('googleapis');
 
@@ -25,6 +26,22 @@ async function run() {
             }
         } else {
             userFractionFloat = undefined
+        }
+
+        // Check release file
+        if (!fs.existsSync(releaseFile)) {
+            core.setFailed(`Unable to find release file @ ${releaseFile}`);
+            return
+        }
+
+        if (whatsNewDir != undefined && !fs.existsSync(whatsNewDir)) {
+            core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
+            return
+        }
+
+        if (mappingFile != undefined && !fs.existsSync(mappingFile)) {
+            core.setFailed(`Unable to find 'mappingFile' @ ${mappingFile}`);
+            return
         }
 
         // Insure that the api can find our service account credentials

@@ -33,6 +33,12 @@ export async function uploadRelease(options: EditOptions, releaseFile: string) {
         packageName: options.applicationId
     });
 
+    const allTracks = await getAllTracks(appEdit.data!, options);
+    if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
+        core.setFailed(`Track "${options.track}" could not be found `)
+        return Promise.reject(`No track found for "${options.track}"`)
+    }
+
     let track: Track | undefined = undefined;
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit.data, options, releaseFile);
@@ -57,6 +63,15 @@ export async function uploadRelease(options: EditOptions, releaseFile: string) {
     }
 }
 
+async function getAllTracks(appEdit: AppEdit, options: EditOptions): Promise<Track[] | undefined> {
+    const res = await androidPublisher.edits.tracks.list({
+        auth: options.auth,
+        editId: appEdit.id!,
+        packageName: options.applicationId
+    });
+
+    return res.data.tracks
+}
 
 async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCode: number): Promise<Track> {
     let status: string;
