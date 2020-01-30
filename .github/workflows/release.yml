@@ -11,6 +11,9 @@ jobs:
     steps:
     - uses: actions/checkout@v1
 
+    - name: Run Tests
+      run: npm run test
+
     - name: Update v1 Tag
       uses: hole19/git-tag-action@master
       env:

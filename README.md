@@ -29,7 +29,10 @@ Portion of users who should get the staged version of the app. Accepts values be
 ### `whatsNewDirectory`
 
 The directory of localized whats new files to upload as the release notes. Using the pattern `whatsnew-<LOCALE>`   
-i.e. `whatsnew-en-US`
+i.e. `whatsnew-en-US`. Where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, for example:
+* `en-US` - English/America
+* `de-DE` - German/Germany
+* `ja-JP` - Japanese/Japan
 
 ### `mappingFile`
 

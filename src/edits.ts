@@ -9,12 +9,11 @@ import AndroidPublisher = androidpublisher_v3.Androidpublisher;
 import AppEdit = androidpublisher_v3.Schema$AppEdit;
 import Apk = androidpublisher_v3.Schema$Apk;
 import Bundle = androidpublisher_v3.Schema$Bundle;
-import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
 import Track = androidpublisher_v3.Schema$Track;
-
 import {Compute} from "google-auth-library/build/src/auth/computeclient";
 import {JWT} from "google-auth-library/build/src/auth/jwtclient";
 import {UserRefreshClient} from "google-auth-library/build/src/auth/refreshclient";
+import {readLocalizedReleaseNotes} from "./whatsnew";
 
 const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 
@@ -103,36 +102,6 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
         });
 
     return res.data
-}
-
-async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
-    if (whatsNewDir != undefined && whatsNewDir.length > 0) {
-        const releaseNotes = fs.readdirSync(whatsNewDir).filter(value => /whatsnew-*-*/.test(value));
-        const pattern = /whatsnew-(?<local>.*-.*)/.compile();
-
-        let localizedReleaseNotes: LocalizedText[] = [];
-
-        releaseNotes.forEach(value => {
-            const matches = value.match(pattern);
-            if (matches != undefined && matches.length == 2) {
-                const lang = matches[1];
-                const content = readFileSync(value, 'utf-8');
-
-                if (content != undefined) {
-                    core.debug(`Found localized 'whatsnew-*-*' for Lang(${lang})`);
-                    localizedReleaseNotes.push(
-                        {
-                            language: lang,
-                            text: content
-                        }
-                    )
-                }
-            }
-        });
-
-        return localizedReleaseNotes
-    }
-    return undefined
 }
 
 async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options: EditOptions) {

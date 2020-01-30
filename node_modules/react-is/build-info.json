@@ -1,8 +1,8 @@
 {
-  "branch": "pull/15226",
-  "buildNumber": "14079",
-  "checksum": "4a4c239",
-  "commit": "297165f1e",
+  "branch": "master",
+  "buildNumber": "59518",
+  "checksum": "6f449c4",
+  "commit": "b53ea6ca0",
   "environment": "ci",
-  "reactVersion": "16.8.5-canary-297165f1e"
+  "reactVersion": "16.11.0-b53ea6ca0"
 }
