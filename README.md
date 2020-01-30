@@ -28,11 +28,21 @@ Portion of users who should get the staged version of the app. Accepts values be
 
 ### `whatsNewDirectory`
 
-The directory of localized whats new files to upload as the release notes. Using the pattern `whatsnew-<LOCALE>`   
-i.e. `whatsnew-en-US`. Where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, for example:
+The directory of localized whats new files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, e.g.
 * `en-US` - English/America
 * `de-DE` - German/Germany
-* `ja-JP` - Japanese/Japan
+* `ja-JP` - Japanese/Japan  
+
+and contain plain `utf8` encoded text with no extension on the file. The resulting directory in your project should look something like this:
+```
+projectDir/
+└── whatsNewDirectory/
+    ├── whatsnew-en-US
+    ├── whatsnew-de-DE
+    └── whatsnew-ja-JP
+```
+where `whatsNewDirectory` is the path you pass to the action.
+
 
 ### `mappingFile`
 
