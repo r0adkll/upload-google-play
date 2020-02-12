@@ -4,9 +4,15 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 
 ## Inputs
 
+_You must provide one of either `serviceAccountJson` or `serviceAccountJsonPlainText`_
+
 ### `serviceAccountJson`
 
-**Required:** The service account json private key file to authorize the upload request
+The service account json private key file to authorize the upload request
+
+### `serviceAccountJsonPlainText`
+
+The service account json in plain text, provided via a secret, etc.
 
 ### `packageName`
 

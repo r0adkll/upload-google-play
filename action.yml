@@ -7,7 +7,10 @@ branding:
 inputs:
   serviceAccountJson:
     description: 'The service account json private key file to authorize the upload request'
-    required: true
+    required: false
+  serviceAccountJsonPlainText:
+    description: 'The raw json text of the service account private key to authorize the upload request'
+    required: false
   packageName:
     description: 'The package name, or Application Id, of the app you are uploading'
     required: true

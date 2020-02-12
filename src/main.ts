@@ -9,13 +9,36 @@ const auth = new google.auth.GoogleAuth({
 
 async function run() {
     try {
-        const serviceAccountJson = core.getInput('serviceAccountJson', { required: true });
+        const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
+        const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
         const releaseFile = core.getInput('releaseFile', { required: true });
         const track = core.getInput('track', { required: true });
         const userFraction = core.getInput('userFraction', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
+
+        if (!serviceAccountJson && !serviceAccountJsonRaw) {
+            console.log("No service account json key provided!");
+            core.setFailed("You must provide one of 'serviceAccountJson' or 'serviceAccountJsonPlainText' to use this action");
+        }
+
+        // If the user has provided the raw plain text via secrets, or w/e, then write to file and
+        // set appropriate env variable for the auth
+        if (serviceAccountJsonRaw) {
+            const serviceAccountFile = "./serviceAccountJson.json";
+            fs.writeFileSync(serviceAccountFile, serviceAccountJsonRaw, {
+                encoding: 'utf8'
+            });
+
+            // Insure that the api can find our service account credentials
+            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountFile);
+        }
+
+        if (serviceAccountJson) {
+            // Insure that the api can find our service account credentials
+            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson);
+        }
 
         // verify inputs
         let userFractionFloat: number | undefined = parseFloat(userFraction);
@@ -43,9 +66,6 @@ async function run() {
             core.setFailed(`Unable to find 'mappingFile' @ ${mappingFile}`);
             return
         }
-
-        // Insure that the api can find our service account credentials
-        core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson);
 
         const authClient = await auth.getClient();
 
