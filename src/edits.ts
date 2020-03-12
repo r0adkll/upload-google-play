@@ -88,6 +88,7 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
             packageName: options.applicationId,
             track: options.track,
             requestBody: {
+                track: options.track,
                 releases: [
                     {
                         userFraction: options.userFraction,
