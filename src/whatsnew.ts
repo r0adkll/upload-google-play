@@ -8,7 +8,7 @@ import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
     if (whatsNewDir != undefined && whatsNewDir.length > 0) {
         const releaseNotes = fs.readdirSync(whatsNewDir)
-            .filter(value => /whatsnew-.*-.{2}\b/.test(value));
+            .filter(value => /whatsnew-.*-.{2,3}\b/.test(value));
         const pattern = /whatsnew-(?<local>.*-.*)/;
 
         let localizedReleaseNotes: LocalizedText[] = [];
