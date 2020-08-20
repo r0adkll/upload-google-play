@@ -10,6 +10,7 @@ import AppEdit = androidpublisher_v3.Schema$AppEdit;
 import Apk = androidpublisher_v3.Schema$Apk;
 import Bundle = androidpublisher_v3.Schema$Bundle;
 import Track = androidpublisher_v3.Schema$Track;
+import InternalAppSharingArtifact = androidpublisher_v3.Schema$InternalAppSharingArtifact;
 import {Compute} from "google-auth-library/build/src/auth/computeclient";
 import {JWT} from "google-auth-library/build/src/auth/jwtclient";
 import {UserRefreshClient} from "google-auth-library/build/src/auth/refreshclient";
@@ -26,7 +27,21 @@ export interface EditOptions {
     mappingFile?: string;
 }
 
-export async function uploadRelease(options: EditOptions, releaseFile: string) {
+export async function uploadRelease(options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
+    // Check the 'track' for 'internalsharing', if so switch to a non-track api
+    if (options.track === 'internalsharing'){
+        core.debug("Track is Internal app sharing, switch to special upload api")
+        if (releaseFile.endsWith('.apk')) {
+            const res = await internalSharingUploadApk(options, releaseFile)
+            return Promise.resolve(res.downloadUrl)
+        } else if (releaseFile.endsWith('.aab')) {
+            const res = await internalSharingUploadBundle(options, releaseFile)
+            return Promise.resolve(res.downloadUrl)
+        } else {
+            return Promise.reject(`Unrecognized Release File`)
+        }
+    }
+
     const appEdit = await androidPublisher.edits.insert({
         auth: options.auth,
         packageName: options.applicationId
@@ -124,8 +139,39 @@ async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options:
     }
 }
 
+async function internalSharingUploadApk(options: EditOptions, apkReleaseFile: string): Promise<InternalAppSharingArtifact> {
+    core.debug(`[packageName=${options.applicationId}]: Uploading Internal Sharing APK @ ${apkReleaseFile}`);
+
+    const res = await androidPublisher.internalappsharingartifacts.uploadapk({
+        auth: options.auth,
+        packageName: options.applicationId,
+        media: {
+            mimeType: 'application/vnd.android.package-archive',
+            body: fs.createReadStream(apkReleaseFile)
+        }
+    });
+
+    return res.data;
+}
+
+async function internalSharingUploadBundle(options: EditOptions, bundleReleaseFile: string): Promise<InternalAppSharingArtifact> {
+    core.debug(`[packageName=${options.applicationId}]: Uploading Internal Sharing Bundle @ ${bundleReleaseFile}`);
+
+    const res = await androidPublisher.internalappsharingartifacts.uploadbundle({
+        auth: options.auth,
+        packageName: options.applicationId,
+        media: {
+            mimeType: 'application/octet-stream',
+            body: fs.createReadStream(bundleReleaseFile)
+        }
+    });
+
+    return res.data;
+}
+
 async function uploadApk(appEdit: AppEdit, options: EditOptions, apkReleaseFile: string): Promise<Apk> {
     core.debug(`[${appEdit.id}, packageName=${options.applicationId}]: Uploading APK @ ${apkReleaseFile}`);
+
     const res = await androidPublisher.edits.apks.upload({
         auth: options.auth,
         packageName: options.applicationId,
