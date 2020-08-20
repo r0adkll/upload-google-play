@@ -74,6 +74,6 @@ with:
   releaseFile: ${{ SIGNED_RELEASE_FILE}}
   track: beta
   userFraction: 0.33
-  whatsNewDirectory: /distribution/whatsnew
-  mappingFile: /app/build/outputs/mapping/release/mapping.txt
+  whatsNewDirectory: distribution/whatsnew
+  mappingFile: app/build/outputs/mapping/release/mapping.txt
 ```
