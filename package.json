@@ -20,8 +20,8 @@
   "author": "r0adkll",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.2.2",
-    "@actions/exec": "^1.0.3",
+    "@actions/core": "^1.2.6",
+    "@actions/exec": "^1.0.4",
     "googleapis": "^45.0.0"
   },
   "devDependencies": {
