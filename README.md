@@ -26,7 +26,7 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The track in which you want to assign the uploaded app.  
 **Default:** `production`  
-_Values:_ `alpha`, `beta`, `internal`, `production`
+_Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
 
 ### `userFraction`
 
@@ -54,6 +54,16 @@ where `whatsNewDirectory` is the path you pass to the action.
 
 The mapping.txt file used to de-obfuscate your stack traces from crash reports
 
+## Outputs
+
+### `internalSharingDownloadUrl`
+
+The download url for an app that was uploaded using the `track` `internalsharing`
+
+### ENV VAR: `INTERNAL_SHARING_DOWNLOAD_URL`
+
+The environment variable that is set when using the `track` `internalsharing`
+
 ## Example usage
 
 ```yaml
@@ -64,6 +74,6 @@ with:
   releaseFile: ${{ SIGNED_RELEASE_FILE}}
   track: beta
   userFraction: 0.33
-  whatsNewDirectory: /distribution/whatsnew
-  mappingFile: /app/build/outputs/mapping/release/mapping.txt
+  whatsNewDirectory: distribution/whatsnew
+  mappingFile: app/build/outputs/mapping/release/mapping.txt
 ```

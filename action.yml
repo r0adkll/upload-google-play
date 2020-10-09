@@ -30,6 +30,9 @@ inputs:
   mappingFile:
     description: 'The mapping.txt file used to de-obfuscate your stack traces from crash reports'
     required: false
+outputs:
+  internalSharingDownloadUrl:
+    description: "The internal app sharing download url if track was 'internalsharing'"
 runs:
   using: 'node12'
   main: 'lib/main.js'
