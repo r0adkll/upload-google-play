@@ -12,7 +12,7 @@ async function run() {
         const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
-        const releaseFile = core.getInput('releaseFile', { required: true });
+        const releaseFiles = core.getInput('releaseFile', { required: true }).split("|").filter(x => x !== "");
         const track = core.getInput('track', { required: true });
         const userFraction = core.getInput('userFraction', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
@@ -51,11 +51,13 @@ async function run() {
             userFractionFloat = undefined
         }
 
-        // Check release file
-        if (!fs.existsSync(releaseFile)) {
-            core.setFailed(`Unable to find release file @ ${releaseFile}`);
-            return
-        }
+        // Check release files
+        releaseFiles.forEach(releaseFile => {
+            if (!fs.existsSync(releaseFile)) {
+                core.setFailed(`Unable to find release file @ ${releaseFile}`);
+                return
+            }
+        });
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
@@ -76,14 +78,14 @@ async function run() {
             userFraction: userFractionFloat,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile
-        }, releaseFile);
+        }, releaseFiles);
 
         if (downloadUrl) {
             core.setOutput('internalSharingDownloadUrl', downloadUrl);
             core.exportVariable('INTERNAL_SHARING_DOWNLOAD_URL', downloadUrl);
         }
 
-        console.log(`Finished uploading ${releaseFile} to the Play Store`)
+        console.log(`Finished uploading to the Play Store`)
     } catch (error) {
         core.setFailed(error.message)
     }
