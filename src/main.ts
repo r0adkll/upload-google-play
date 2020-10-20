@@ -1,6 +1,6 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
-import {uploadRelease} from "./edits";
+import { uploadToPlayStore } from "./edits";
 const {google} = require('googleapis');
 
 const auth = new google.auth.GoogleAuth({
@@ -71,7 +71,7 @@ async function run() {
 
         const authClient = await auth.getClient();
 
-        const downloadUrl = await uploadRelease({
+        const downloadUrl = await uploadToPlayStore({
             auth: authClient,
             applicationId: packageName,
             track: track,
