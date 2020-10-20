@@ -15,7 +15,7 @@ inputs:
     description: 'The package name, or Application Id, of the app you are uploading'
     required: true
   releaseFiles:
-    description: 'The Android release file(s) to upload (.apk or .aab). Separated by  a \',\' for multiple artifacts'
+    description: "The Android release file(s) to upload (.apk or .aab). Separated by  a ',' for multiple artifacts"
     required: true
   track:
     description: 'The track in which you want to assign the uploaded app.'
