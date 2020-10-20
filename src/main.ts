@@ -52,7 +52,6 @@ async function run() {
         }
 
         // Check release files
-        console.log(`Checking ${releaseFiles.length} files`)
         releaseFiles.forEach(releaseFile => {
             if (!fs.existsSync(releaseFile)) {
                 core.setFailed(`Unable to find release file @ ${releaseFile}`);
