@@ -12,7 +12,7 @@ async function run() {
         const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
-        const releaseFiles = core.getInput('releaseFile', { required: true }).split(',').filter(x => x !== '');
+        const releaseFiles = core.getInput('releaseFiles', { required: true }).split(',').filter(x => x !== '');
         const track = core.getInput('track', { required: true });
         const userFraction = core.getInput('userFraction', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
