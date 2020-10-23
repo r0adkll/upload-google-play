@@ -36,6 +36,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     releaseFiles.forEach(async releaseFile => {
         core.debug(`Uploading ${releaseFile}`)
         await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+            core.setFailed(reason)
             return Promise.reject(reason)
         })
     })
@@ -61,9 +62,11 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
         core.debug("Track is Internal app sharing, switch to special upload api")
         if (releaseFile.endsWith('.apk')) {
             const res = await internalSharingUploadApk(options, releaseFile)
+            console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
             return Promise.resolve(res.downloadUrl)
         } else if (releaseFile.endsWith('.aab')) {
             const res = await internalSharingUploadBundle(options, releaseFile)
+            console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
             return Promise.resolve(res.downloadUrl)
         } else {
             core.setFailed(`${releaseFile} is invalid`)
