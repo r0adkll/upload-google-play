@@ -33,17 +33,22 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         packageName: options.applicationId
     });
     
-    var versionCodes = new Array<number>()
-    releaseFiles.forEach(async releaseFile => {
-        core.debug(`Uploading ${releaseFile}`)
-        const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
-            core.setFailed(reason)
-            return Promise.reject(reason)
-        })
-        versionCodes.push(versionCode!)
-    })
+    await validateSelectedTrack(appEdit.data, options).catch(reason => {
+        core.setFailed(reason);
+        return Promise.reject(reason);
+    });
 
-    const track = trackVersionCode(appEdit.data, options, versionCodes)
+    var versionCodes = new Array<number>();
+    releaseFiles.forEach(async releaseFile => {
+        core.debug(`Uploading ${releaseFile}`);
+        const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+            core.setFailed(reason);
+            return Promise.reject(reason);
+        });
+        versionCodes.push(versionCode!);
+    });
+
+    const track = trackVersionCode(appEdit.data, options, versionCodes);
     const res = await androidPublisher.edits.commit({
         auth: options.auth,
         editId: appEdit.data.id!,
@@ -51,11 +56,11 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     });
 
     if (res.data.id != null) {
-        core.debug(`Successfully committed ${res.data.id}`)
-        return Promise.resolve(res.data.id!)
+        core.debug(`Successfully committed ${res.data.id}`);
+        return Promise.resolve(res.data.id!);
     } else {
-        core.setFailed(`Error ${res.status}: ${res.statusText}`)
-        return Promise.reject(res.status)
+        core.setFailed(`Error ${res.status}: ${res.statusText}`);
+        return Promise.reject(res.status);
     }
 }
 
@@ -77,12 +82,6 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
         }
     }
 
-    const allTracks = await getAllTracks(appEdit!, options);
-    if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
-        core.setFailed(`Track "${options.track}" could not be found `)
-        return Promise.reject(`No track found for "${options.track}"`)
-    }
-
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, apk.versionCode!, options);
@@ -97,14 +96,17 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
     }
 }
 
-async function getAllTracks(appEdit: AppEdit, options: EditOptions): Promise<Track[] | undefined> {
+async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Promise<undefined> {
     const res = await androidPublisher.edits.tracks.list({
         auth: options.auth,
         editId: appEdit.id!,
         packageName: options.applicationId
     });
-
-    return res.data.tracks
+    const allTracks = res.data.tracks;
+    if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
+        core.setFailed(`Track "${options.track}" could not be found `)
+        return Promise.reject(`No track found for "${options.track}"`)
+    }
 }
 
 async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
