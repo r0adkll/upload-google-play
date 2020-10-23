@@ -28,60 +28,70 @@ export interface EditOptions {
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
-    const appEdit = await androidPublisher.edits.insert({
-        auth: options.auth,
-        packageName: options.applicationId
-    });
-    
-    await validateSelectedTrack(appEdit.data, options).catch(reason => {
-        core.setFailed(reason);
-        return Promise.reject(reason);
-    });
-
-    var versionCodes = new Array<number>();
-    releaseFiles.forEach(async releaseFile => {
-        core.debug(`Uploading ${releaseFile}`);
-        const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+    if (options.track === 'internalappsharing') {
+        core.debug("Track is Internal app sharing, switch to special upload api")
+        releaseFiles.forEach(async releaseFile => {
+            core.debug(`Uploading ${releaseFile}`);
+            await uploadInternalSharingRelease(options, releaseFile).catch(reason => {
+                core.setFailed(reason);
+                return Promise.reject(reason);
+            });
+        });
+    } else {
+        const appEdit = await androidPublisher.edits.insert({
+            auth: options.auth,
+            packageName: options.applicationId
+        });
+        
+        await validateSelectedTrack(appEdit.data, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
         });
-        versionCodes.push(versionCode!);
-    });
+    
+        // Check the 'track' for 'internalsharing', if so switch to a non-track api
+        var versionCodes = new Array<number>();
+        releaseFiles.forEach(async releaseFile => {
+            core.debug(`Uploading ${releaseFile}`);
+            const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+                core.setFailed(reason);
+                return Promise.reject(reason);
+            });
+            versionCodes.push(versionCode!);
+        });
+        
+        const track = addReleasesToTrack(appEdit.data, options, versionCodes);
+        const res = await androidPublisher.edits.commit({
+            auth: options.auth,
+            editId: appEdit.data.id!,
+            packageName: options.applicationId
+        });
+    
+        if (res.data.id != null) {
+            core.debug(`Successfully committed ${res.data.id}`);
+            return Promise.resolve(res.data.id!);
+        } else {
+            core.setFailed(`Error ${res.status}: ${res.statusText}`);
+            return Promise.reject(res.status);
+        }
+    }
+}
 
-    const track = addReleasesToTrack(appEdit.data, options, versionCodes);
-    const res = await androidPublisher.edits.commit({
-        auth: options.auth,
-        editId: appEdit.data.id!,
-        packageName: options.applicationId
-    });
-
-    if (res.data.id != null) {
-        core.debug(`Successfully committed ${res.data.id}`);
-        return Promise.resolve(res.data.id!);
+async function uploadInternalSharingRelease(options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
+    if (releaseFile.endsWith('.apk')) {
+        const res = await internalSharingUploadApk(options, releaseFile)
+        console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
+        return Promise.resolve(res.downloadUrl)
+    } else if (releaseFile.endsWith('.aab')) {
+        const res = await internalSharingUploadBundle(options, releaseFile)
+        console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
+        return Promise.resolve(res.downloadUrl)
     } else {
-        core.setFailed(`Error ${res.status}: ${res.statusText}`);
-        return Promise.reject(res.status);
+        core.setFailed(`${releaseFile} is invalid`)
+        return Promise.reject(`${releaseFile} is invalid`)
     }
 }
 
 async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
-    // Check the 'track' for 'internalsharing', if so switch to a non-track api
-    if (options.track === 'internalsharing'){
-        core.debug("Track is Internal app sharing, switch to special upload api")
-        if (releaseFile.endsWith('.apk')) {
-            const res = await internalSharingUploadApk(options, releaseFile)
-            console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
-            return Promise.resolve(undefined)
-        } else if (releaseFile.endsWith('.aab')) {
-            const res = await internalSharingUploadBundle(options, releaseFile)
-            console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
-            return Promise.resolve(undefined)
-        } else {
-            core.setFailed(`${releaseFile} is invalid`)
-            return Promise.reject(`${releaseFile} is invalid`)
-        }
-    }
-
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, apk.versionCode!, options);
