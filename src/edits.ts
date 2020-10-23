@@ -33,14 +33,17 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         packageName: options.applicationId
     });
     
+    var versionCodes = new Array<number>()
     releaseFiles.forEach(async releaseFile => {
         core.debug(`Uploading ${releaseFile}`)
-        await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+        const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
             core.setFailed(reason)
             return Promise.reject(reason)
         })
+        versionCodes.push(versionCode!)
     })
 
+    const track = trackVersionCode(appEdit.data, options, versionCodes)
     const res = await androidPublisher.edits.commit({
         auth: options.auth,
         editId: appEdit.data.id!,
@@ -56,18 +59,18 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     }
 }
 
-async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
+async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing'){
         core.debug("Track is Internal app sharing, switch to special upload api")
         if (releaseFile.endsWith('.apk')) {
             const res = await internalSharingUploadApk(options, releaseFile)
             console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
-            return Promise.resolve(res.downloadUrl)
+            return Promise.resolve(undefined)
         } else if (releaseFile.endsWith('.aab')) {
             const res = await internalSharingUploadBundle(options, releaseFile)
             console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
-            return Promise.resolve(res.downloadUrl)
+            return Promise.resolve(undefined)
         } else {
             core.setFailed(`${releaseFile} is invalid`)
             return Promise.reject(`${releaseFile} is invalid`)
@@ -80,15 +83,14 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
         return Promise.reject(`No track found for "${options.track}"`)
     }
 
-    let track: Track | undefined = undefined;
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, apk.versionCode!, options);
-        track = await trackVersionCode(appEdit, options, apk.versionCode!)
+        return Promise.resolve(apk.versionCode)
     } else if (releaseFile.endsWith('.aab')) {
         const bundle = await uploadBundle(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, bundle.versionCode!, options);
-        track = await trackVersionCode(appEdit, options, bundle.versionCode!)
+        return Promise.resolve(bundle.versionCode)
     } else {
         core.setFailed(`${releaseFile} is invalid`)
         return Promise.reject(`${releaseFile} is invalid`)
@@ -105,7 +107,7 @@ async function getAllTracks(appEdit: AppEdit, options: EditOptions): Promise<Tra
     return res.data.tracks
 }
 
-async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCode: number): Promise<Track> {
+async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
     let status: string;
     if (options.userFraction != undefined) {
         status = 'inProgress'
@@ -113,7 +115,7 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
         status = 'completed'
     }
 
-    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCode(${versionCode})`);
+    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,
@@ -127,9 +129,7 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
                         userFraction: options.userFraction,
                         status: status,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
-                        versionCodes: [
-                            versionCode.toString()
-                        ]
+                        versionCodes: versionCodes.map(x => x.toString())
                     }
                 ]
             }
