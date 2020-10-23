@@ -48,7 +48,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         versionCodes.push(versionCode!);
     });
 
-    const track = trackVersionCode(appEdit.data, options, versionCodes);
+    const track = addReleasesToTrack(appEdit.data, options, versionCodes);
     const res = await androidPublisher.edits.commit({
         auth: options.auth,
         editId: appEdit.data.id!,
@@ -85,14 +85,14 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, apk.versionCode!, options);
-        return Promise.resolve(apk.versionCode)
+        return Promise.resolve(apk.versionCode);
     } else if (releaseFile.endsWith('.aab')) {
         const bundle = await uploadBundle(appEdit, options, releaseFile);
         await uploadMappingFile(appEdit, bundle.versionCode!, options);
-        return Promise.resolve(bundle.versionCode)
+        return Promise.resolve(bundle.versionCode);
     } else {
-        core.setFailed(`${releaseFile} is invalid`)
-        return Promise.reject(`${releaseFile} is invalid`)
+        core.setFailed(`${releaseFile} is invalid`);
+        return Promise.reject(`${releaseFile} is invalid`);
     }
 }
 
@@ -104,17 +104,17 @@ async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Pr
     });
     const allTracks = res.data.tracks;
     if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
-        core.setFailed(`Track "${options.track}" could not be found `)
-        return Promise.reject(`No track found for "${options.track}"`)
+        core.setFailed(`Track "${options.track}" could not be found `);
+        return Promise.reject(`No track found for "${options.track}"`);
     }
 }
 
-async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
+async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
     let status: string;
     if (options.userFraction != undefined) {
-        status = 'inProgress'
+        status = 'inProgress';
     } else {
-        status = 'completed'
+        status = 'completed';
     }
 
     core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCodes(${versionCodes})`);
@@ -137,7 +137,7 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
             }
         });
 
-    return res.data
+    return res.data;
 }
 
 async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options: EditOptions) {
