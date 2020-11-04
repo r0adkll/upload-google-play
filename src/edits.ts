@@ -44,13 +44,13 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             auth: options.auth,
             packageName: options.applicationId
         });
-        
+
         // Validate the given track
         await validateSelectedTrack(appEdit.data, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
         });
-    
+
         // Upload artifacts to Google Play, and store their version codes
         var versionCodes = new Array<number>();
         for (const releaseFile in releaseFiles) {
@@ -61,7 +61,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             });
             versionCodes.push(versionCode!);
         }
-        
+
         // Add the uploaded artifacts to the Edit track
         const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
 
@@ -71,7 +71,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             editId: appEdit.data.id!,
             packageName: options.applicationId
         });
-    
+
         // Simple check to see whether commit was successful
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
