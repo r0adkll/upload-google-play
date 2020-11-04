@@ -31,13 +31,13 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
-        releaseFiles.forEach(async releaseFile => {
+        for (const releaseFile in releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
             await uploadInternalSharingRelease(options, releaseFile).catch(reason => {
                 core.setFailed(reason);
                 return Promise.reject(reason);
             });
-        });
+        }
     } else {
         // Create a new Edit
         const appEdit = await androidPublisher.edits.insert({
@@ -53,14 +53,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     
         // Upload artifacts to Google Play, and store their version codes
         var versionCodes = new Array<number>();
-        releaseFiles.forEach(async releaseFile => {
+        for (const releaseFile in releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
             const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
                 core.setFailed(reason);
                 return Promise.reject(reason);
             });
             versionCodes.push(versionCode!);
-        });
+        }
         
         // Add the uploaded artifacts to the Edit track
         const track = addReleasesToTrack(appEdit.data, options, versionCodes);
