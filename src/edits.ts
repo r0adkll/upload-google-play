@@ -28,6 +28,7 @@ export interface EditOptions {
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
+    // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalappsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
         releaseFiles.forEach(async releaseFile => {
@@ -38,17 +39,19 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             });
         });
     } else {
+        // Create a new Edit
         const appEdit = await androidPublisher.edits.insert({
             auth: options.auth,
             packageName: options.applicationId
         });
         
+        // Validate the given track
         await validateSelectedTrack(appEdit.data, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
         });
     
-        // Check the 'track' for 'internalsharing', if so switch to a non-track api
+        // Upload artifacts to Google Play, and store their version codes
         var versionCodes = new Array<number>();
         releaseFiles.forEach(async releaseFile => {
             core.debug(`Uploading ${releaseFile}`);
@@ -59,13 +62,17 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             versionCodes.push(versionCode!);
         });
         
+        // Add the uploaded artifacts to the Edit track
         const track = addReleasesToTrack(appEdit.data, options, versionCodes);
+
+        // Commit the pending Edit
         const res = await androidPublisher.edits.commit({
             auth: options.auth,
             editId: appEdit.data.id!,
             packageName: options.applicationId
         });
     
+        // Simple check to see whether commit was successful
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
             return Promise.resolve(res.data.id!);
