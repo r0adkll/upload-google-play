@@ -28,89 +28,106 @@ export interface EditOptions {
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
-    const appEdit = await androidPublisher.edits.insert({
-        auth: options.auth,
-        packageName: options.applicationId
-    });
-    
-    releaseFiles.forEach(async releaseFile => {
-        core.debug(`Uploading ${releaseFile}`)
-        await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
-            return Promise.reject(reason)
-        })
-    })
-
-    const res = await androidPublisher.edits.commit({
-        auth: options.auth,
-        editId: appEdit.data.id!,
-        packageName: options.applicationId
-    });
-
-    if (res.data.id != null) {
-        core.debug(`Successfully committed ${res.data.id}`)
-        return Promise.resolve(res.data.id!)
+    if (options.track === 'internalappsharing') {
+        core.debug("Track is Internal app sharing, switch to special upload api")
+        releaseFiles.forEach(async releaseFile => {
+            core.debug(`Uploading ${releaseFile}`);
+            await uploadInternalSharingRelease(options, releaseFile).catch(reason => {
+                core.setFailed(reason);
+                return Promise.reject(reason);
+            });
+        });
     } else {
-        core.setFailed(`Error ${res.status}: ${res.statusText}`)
-        return Promise.reject(res.status)
+        const appEdit = await androidPublisher.edits.insert({
+            auth: options.auth,
+            packageName: options.applicationId
+        });
+        
+        await validateSelectedTrack(appEdit.data, options).catch(reason => {
+            core.setFailed(reason);
+            return Promise.reject(reason);
+        });
+    
+        // Check the 'track' for 'internalsharing', if so switch to a non-track api
+        var versionCodes = new Array<number>();
+        releaseFiles.forEach(async releaseFile => {
+            core.debug(`Uploading ${releaseFile}`);
+            const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+                core.setFailed(reason);
+                return Promise.reject(reason);
+            });
+            versionCodes.push(versionCode!);
+        });
+        
+        const track = addReleasesToTrack(appEdit.data, options, versionCodes);
+        const res = await androidPublisher.edits.commit({
+            auth: options.auth,
+            editId: appEdit.data.id!,
+            packageName: options.applicationId
+        });
+    
+        if (res.data.id != null) {
+            core.debug(`Successfully committed ${res.data.id}`);
+            return Promise.resolve(res.data.id!);
+        } else {
+            core.setFailed(`Error ${res.status}: ${res.statusText}`);
+            return Promise.reject(res.status);
+        }
     }
 }
 
-async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
-    // Check the 'track' for 'internalsharing', if so switch to a non-track api
-    if (options.track === 'internalsharing'){
-        core.debug("Track is Internal app sharing, switch to special upload api")
-        if (releaseFile.endsWith('.apk')) {
-            const res = await internalSharingUploadApk(options, releaseFile)
-            return Promise.resolve(res.downloadUrl)
-        } else if (releaseFile.endsWith('.aab')) {
-            const res = await internalSharingUploadBundle(options, releaseFile)
-            return Promise.resolve(res.downloadUrl)
-        } else {
-            core.setFailed(`${releaseFile} is invalid`)
-            return Promise.reject(`${releaseFile} is invalid`)
-        }
-    }
-
-    const allTracks = await getAllTracks(appEdit!, options);
-    if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
-        core.setFailed(`Track "${options.track}" could not be found `)
-        return Promise.reject(`No track found for "${options.track}"`)
-    }
-
-    let track: Track | undefined = undefined;
+async function uploadInternalSharingRelease(options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
-        const apk = await uploadApk(appEdit, options, releaseFile);
-        await uploadMappingFile(appEdit, apk.versionCode!, options);
-        track = await trackVersionCode(appEdit, options, apk.versionCode!)
+        const res = await internalSharingUploadApk(options, releaseFile)
+        console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
+        return Promise.resolve(res.downloadUrl)
     } else if (releaseFile.endsWith('.aab')) {
-        const bundle = await uploadBundle(appEdit, options, releaseFile);
-        await uploadMappingFile(appEdit, bundle.versionCode!, options);
-        track = await trackVersionCode(appEdit, options, bundle.versionCode!)
+        const res = await internalSharingUploadBundle(options, releaseFile)
+        console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
+        return Promise.resolve(res.downloadUrl)
     } else {
         core.setFailed(`${releaseFile} is invalid`)
         return Promise.reject(`${releaseFile} is invalid`)
     }
 }
 
-async function getAllTracks(appEdit: AppEdit, options: EditOptions): Promise<Track[] | undefined> {
+async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
+    if (releaseFile.endsWith('.apk')) {
+        const apk = await uploadApk(appEdit, options, releaseFile);
+        await uploadMappingFile(appEdit, apk.versionCode!, options);
+        return Promise.resolve(apk.versionCode);
+    } else if (releaseFile.endsWith('.aab')) {
+        const bundle = await uploadBundle(appEdit, options, releaseFile);
+        await uploadMappingFile(appEdit, bundle.versionCode!, options);
+        return Promise.resolve(bundle.versionCode);
+    } else {
+        core.setFailed(`${releaseFile} is invalid`);
+        return Promise.reject(`${releaseFile} is invalid`);
+    }
+}
+
+async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Promise<undefined> {
     const res = await androidPublisher.edits.tracks.list({
         auth: options.auth,
         editId: appEdit.id!,
         packageName: options.applicationId
     });
-
-    return res.data.tracks
+    const allTracks = res.data.tracks;
+    if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
+        core.setFailed(`Track "${options.track}" could not be found `);
+        return Promise.reject(`No track found for "${options.track}"`);
+    }
 }
 
-async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionCode: number): Promise<Track> {
+async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
     let status: string;
     if (options.userFraction != undefined) {
-        status = 'inProgress'
+        status = 'inProgress';
     } else {
-        status = 'completed'
+        status = 'completed';
     }
 
-    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCode(${versionCode})`);
+    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,
@@ -124,15 +141,13 @@ async function trackVersionCode(appEdit: AppEdit, options: EditOptions, versionC
                         userFraction: options.userFraction,
                         status: status,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
-                        versionCodes: [
-                            versionCode.toString()
-                        ]
+                        versionCodes: versionCodes.map(x => x.toString())
                     }
                 ]
             }
         });
 
-    return res.data
+    return res.data;
 }
 
 async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options: EditOptions) {
