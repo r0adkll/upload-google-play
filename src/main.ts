@@ -71,7 +71,7 @@ async function run() {
 
         const authClient = await auth.getClient();
 
-        const downloadUrl = await uploadToPlayStore({
+        await uploadToPlayStore({
             auth: authClient,
             applicationId: packageName,
             track: track,
@@ -79,11 +79,6 @@ async function run() {
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile
         }, releaseFiles);
-
-        if (downloadUrl) {
-            core.setOutput('internalSharingDownloadUrl', downloadUrl);
-            core.exportVariable('INTERNAL_SHARING_DOWNLOAD_URL', downloadUrl);
-        }
 
         console.log(`Finished uploading to the Play Store`)
     } catch (error) {
