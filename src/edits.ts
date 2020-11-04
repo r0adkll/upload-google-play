@@ -63,7 +63,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         }
         
         // Add the uploaded artifacts to the Edit track
-        const track = addReleasesToTrack(appEdit.data, options, versionCodes);
+        const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
 
         // Commit the pending Edit
         const res = await androidPublisher.edits.commit({
