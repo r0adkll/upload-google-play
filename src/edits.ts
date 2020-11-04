@@ -29,7 +29,7 @@ export interface EditOptions {
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
-    if (options.track === 'internalappsharing') {
+    if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
         releaseFiles.forEach(async releaseFile => {
             core.debug(`Uploading ${releaseFile}`);
