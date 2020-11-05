@@ -93,7 +93,6 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
         console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
         return Promise.resolve(res.downloadUrl)
     } else {
-        core.setFailed(`${releaseFile} is invalid`)
         return Promise.reject(`${releaseFile} is invalid`)
     }
 }
@@ -108,7 +107,6 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
         await uploadMappingFile(appEdit, bundle.versionCode!, options);
         return Promise.resolve(bundle.versionCode);
     } else {
-        core.setFailed(`${releaseFile} is invalid`);
         return Promise.reject(`${releaseFile} is invalid`);
     }
 }
@@ -121,8 +119,7 @@ async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Pr
     });
     const allTracks = res.data.tracks;
     if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
-        core.setFailed(`Track "${options.track}" could not be found `);
-        return Promise.reject(`No track found for "${options.track}"`);
+        return Promise.reject(`Track "${options.track}" could not be found `);
     }
 }
 
@@ -148,7 +145,7 @@ async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versio
                         userFraction: options.userFraction,
                         status: status,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
-                        versionCodes: versionCodes.map(x => x.toString())
+                        versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
                     }
                 ]
             }
