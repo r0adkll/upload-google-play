@@ -52,12 +52,12 @@ async function run() {
         }
 
         // Check release files
-        releaseFiles.forEach(releaseFile => {
+        for (const releaseFile in releaseFiles) {
             if (!fs.existsSync(releaseFile)) {
                 core.setFailed(`Unable to find release file @ ${releaseFile}`);
                 return
             }
-        });
+        }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
