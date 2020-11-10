@@ -31,7 +31,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
-        for (const releaseFile in releaseFiles) {
+        for (const releaseFile of releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
             await uploadInternalSharingRelease(options, releaseFile).catch(reason => {
                 core.setFailed(reason);
@@ -53,7 +53,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Upload artifacts to Google Play, and store their version codes
         var versionCodes = new Array<number>();
-        for (const releaseFile in releaseFiles) {
+        for (const releaseFile of releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
             const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
                 core.setFailed(reason);
