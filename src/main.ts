@@ -52,6 +52,7 @@ async function run() {
         }
 
         // Check release files
+        core.debug(`Checking release files ${releaseFiles}`);
         for (const releaseFile in releaseFiles) {
             if (!fs.existsSync(releaseFile)) {
                 core.setFailed(`Unable to find release file @ ${releaseFile}`);
