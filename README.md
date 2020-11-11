@@ -22,6 +22,10 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','.
 
+### `releaseName`
+
+The release name. Not required to be unique. If not set, the name is generated from the APK's versionName. If the release contains multiple APKs, the name is generated from the date.
+
 ### `track`
 
 **Required:** The track in which you want to assign the uploaded app.  

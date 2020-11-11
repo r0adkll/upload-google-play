@@ -17,6 +17,9 @@ inputs:
   releaseFiles:
     description: "The Android release file(s) to upload (.apk or .aab). Separated by  a ',' for multiple artifacts"
     required: true
+  releaseName:
+    description: 'The name of this release. If not set it's generated automatically from the APKs versionName'
+    required: false
   track:
     description: 'The track in which you want to assign the uploaded app.'
     default: 'production'

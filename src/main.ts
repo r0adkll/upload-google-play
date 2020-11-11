@@ -13,6 +13,7 @@ async function run() {
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
         const releaseFiles = core.getInput('releaseFiles', { required: true }).split(',').filter(x => x !== '');
+        const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false });
@@ -92,7 +93,8 @@ async function run() {
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
             userFraction: userFractionFloat,
             whatsNewDir: whatsNewDir,
-            mappingFile: mappingFile
+            mappingFile: mappingFile,
+            name: releaseName
         }, releaseFiles);
 
         console.log(`Finished uploading to the Play Store`)
