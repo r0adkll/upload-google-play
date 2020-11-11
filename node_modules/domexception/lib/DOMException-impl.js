@@ -3,7 +3,7 @@ const legacyErrorCodes = require("./legacy-error-codes.json");
 const idlUtils = require("./utils.js");
 
 exports.implementation = class DOMExceptionImpl {
-  constructor([message, name]) {
+  constructor(globalObject, [message, name]) {
     this.name = name;
     this.message = message;
   }

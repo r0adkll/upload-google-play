@@ -1,9 +1,9 @@
 "use strict";
 
-const DOMException = require("domexception");
+const DOMException = require("domexception/webidl2js-wrapper");
 
 class SVGNumberImpl {
-  constructor(args, privateData) {
+  constructor(globalObject, args, privateData) {
     // Delegate to parent List object for (almost) everything related to reflection.
     this._parentList = privateData.parentList;
     this._value = 0;
@@ -35,7 +35,10 @@ class SVGNumberImpl {
 
   set value(value) {
     if (this._readOnly) {
-      throw new DOMException("Attempting to modify a read-only SVGNumber", "NoModificationAllowedError");
+      throw DOMException.create(this._globalObject, [
+        "Attempting to modify a read-only SVGNumber",
+        "NoModificationAllowedError"
+      ]);
     }
     this._value = value;
     this._reserialize();

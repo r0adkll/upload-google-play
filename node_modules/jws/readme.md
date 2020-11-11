@@ -1,4 +1,4 @@
-# node-jws [![Build Status](https://secure.travis-ci.org/brianloveswords/node-jws.png)](http://travis-ci.org/brianloveswords/node-jws)
+# node-jws [![Build Status](https://secure.travis-ci.org/brianloveswords/node-jws.svg)](http://travis-ci.org/brianloveswords/node-jws)
 
 An implementation of [JSON Web Signatures](http://self-issued.info/docs/draft-ietf-jose-json-web-signature.html).
 

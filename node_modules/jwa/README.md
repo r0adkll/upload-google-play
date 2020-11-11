@@ -55,7 +55,7 @@ RSA and ECDSA algorithms.
 
 Creates a new `jwa` object with `sign` and `verify` methods for the
 algorithm. Valid values for algorithm can be found in the table above
-(`'HS256'`, `'HS384'`, etc) and are case-insensitive. Passing an invalid
+(`'HS256'`, `'HS384'`, etc) and are case-sensitive. Passing an invalid
 algorithm value will throw a `TypeError`.
 
 

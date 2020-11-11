@@ -22,9 +22,11 @@ export interface EditOptions {
     auth: Compute | JWT | UserRefreshClient;
     applicationId: string;
     track: string;
+    inAppUpdatePriority: number;
     userFraction?: number;
     whatsNewDir?: string;
     mappingFile?: string;
+    name?: string;
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
@@ -142,8 +144,10 @@ async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versio
                 track: options.track,
                 releases: [
                     {
+                        name: options.name,
                         userFraction: options.userFraction,
                         status: status,
+                        inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
                         versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
                     }

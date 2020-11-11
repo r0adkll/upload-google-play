@@ -238,6 +238,20 @@ test('#52 - incorrectly resolves module-paths like "./someFolder/" when there is
     t.end();
 });
 
+test('#211 - incorrectly resolves module-paths like "." when from inside a folder with a sibling file of the same name', function (t) {
+    var dir = path.join(__dirname, 'resolver');
+
+    t.equal(
+        resolve.sync('./', { basedir: path.join(dir, 'same_names/foo') }),
+        path.join(dir, 'same_names/foo/index.js')
+    );
+    t.equal(
+        resolve.sync('.', { basedir: path.join(dir, 'same_names/foo') }),
+        path.join(dir, 'same_names/foo/index.js')
+    );
+    t.end();
+});
+
 test('sync: #121 - treating an existing file as a dir when no basedir', function (t) {
     var testFile = path.basename(__filename);
 

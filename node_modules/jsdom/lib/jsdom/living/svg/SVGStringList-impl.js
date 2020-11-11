@@ -4,7 +4,9 @@ const { mixin } = require("../../utils");
 const SVGListBase = require("./SVGListBase");
 
 class SVGStringListImpl {
-  constructor(args, privateData) {
+  constructor(globalObject, args, privateData) {
+    this._globalObject = globalObject;
+
     this._initList(privateData);
   }
 }

@@ -22,11 +22,22 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','.
 
+### `releaseName`
+
+The release name. Not required to be unique. If not set, the name is generated from the APK's versionName. If the release contains multiple APKs, the name is generated from the date.
+
 ### `track`
 
 **Required:** The track in which you want to assign the uploaded app.  
 **Default:** `production`  
 _Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
+
+### `inAppUpdatePriority`
+
+In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority.
+
+**Default:** `0`
+_Values:_ `[0, 5]`
 
 ### `userFraction`
 
@@ -72,7 +83,8 @@ with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
   releaseFile: ${{ SIGNED_RELEASE_FILE}}
-  track: beta
+  track: production
+  inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt

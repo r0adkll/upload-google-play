@@ -17,6 +17,16 @@ function _path() {
   return data;
 }
 
+function _url() {
+  const data = require("url");
+
+  _url = function () {
+    return data;
+  };
+
+  return data;
+}
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -79,7 +89,7 @@ function _loadMjsDefault() {
       throw new Error("Internal error: Native ECMAScript modules aren't supported" + " by this platform.\n");
     }
 
-    const module = yield import_(filepath);
+    const module = yield import_((0, _url().pathToFileURL)(filepath));
     return module.default;
   });
   return _loadMjsDefault.apply(this, arguments);

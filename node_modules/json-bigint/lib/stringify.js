@@ -249,6 +249,7 @@ var JSON = module.exports;
 
         case 'boolean':
         case 'null':
+        case 'bigint':
 
 // If the value is a boolean or null, convert it to a string. Note:
 // typeof null does not produce 'null'. The case is included here in

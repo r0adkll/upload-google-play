@@ -13,11 +13,14 @@ async function run() {
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
         const releaseFiles = core.getInput('releaseFiles', { required: true }).split(',').filter(x => x !== '');
+        const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
+        const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
 
+        // Validate that we have a service account json in some format
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
             console.log("No service account json key provided!");
             core.setFailed("You must provide one of 'serviceAccountJson' or 'serviceAccountJsonPlainText' to use this action");
@@ -40,15 +43,26 @@ async function run() {
             core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson);
         }
 
-        // verify inputs
+        // Validate user fraction as a number, and within [0.0, 1.0]
         let userFractionFloat: number | undefined = parseFloat(userFraction);
         if (!isNaN(userFractionFloat)) {
             if (userFractionFloat <= 0.0 || userFractionFloat >= 1.0) {
-                core.setFailed('A provided userFraction must be between 0.0 and 1.0, exclusive-exclusive');
-                return
+                core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
+                return;
             }
         } else {
-            userFractionFloat = undefined
+            userFractionFloat = undefined;
+        }
+
+        // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
+        let inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
+        if (!isNaN(inAppUpdatePriorityInt)) {
+            if (inAppUpdatePriorityInt < 0 || inAppUpdatePriorityInt > 5) {
+                core.setFailed('inAppUpdatePriority must be between 0 and 5, inclusive-inclusive');
+                return;
+            }
+        } else {
+            inAppUpdatePriorityInt = undefined;
         }
 
         // Check release files
@@ -76,9 +90,11 @@ async function run() {
             auth: authClient,
             applicationId: packageName,
             track: track,
+            inAppUpdatePriority: inAppUpdatePriorityInt || 0,
             userFraction: userFractionFloat,
             whatsNewDir: whatsNewDir,
-            mappingFile: mappingFile
+            mappingFile: mappingFile,
+            name: releaseName
         }, releaseFiles);
 
         console.log(`Finished uploading to the Play Store`)

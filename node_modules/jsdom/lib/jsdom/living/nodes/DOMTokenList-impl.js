@@ -1,29 +1,33 @@
 "use strict";
 
-const DOMException = require("domexception");
+const DOMException = require("domexception/webidl2js-wrapper");
 const OrderedSet = require("../helpers/ordered-set.js");
 const { asciiLowercase } = require("../helpers/strings.js");
 const idlUtils = require("../generated/utils.js");
 
 const { getAttributeValue, setAttributeValue, hasAttributeByName } = require("../attributes.js");
 
-function validateTokens(...tokens) {
+function validateTokens(globalObject, ...tokens) {
   for (const token of tokens) {
     if (token === "") {
-      throw new DOMException("The token provided must not be empty.", "SyntaxError");
+      throw DOMException.create(globalObject, ["The token provided must not be empty.", "SyntaxError"]);
     }
   }
   for (const token of tokens) {
     if (/[\t\n\f\r ]/.test(token)) {
-      const whitespaceMsg = "The token provided contains HTML space characters, which are not valid in tokens.";
-      throw new DOMException(whitespaceMsg, "InvalidCharacterError");
+      throw DOMException.create(globalObject, [
+        "The token provided contains HTML space characters, which are not valid in tokens.",
+        "InvalidCharacterError"
+      ]);
     }
   }
 }
 
 // https://dom.spec.whatwg.org/#domtokenlist
 class DOMTokenListImpl {
-  constructor(constructorArgs, privateData) {
+  constructor(globalObject, args, privateData) {
+    this._globalObject = globalObject;
+
     // _syncWithElement() must always be called before any _tokenSet access.
     this._tokenSet = new OrderedSet();
     this._element = privateData.element;
@@ -103,7 +107,7 @@ class DOMTokenListImpl {
 
   add(...tokens) {
     for (const token of tokens) {
-      validateTokens(token);
+      validateTokens(this._globalObject, token);
     }
     this._syncWithElement();
     for (const token of tokens) {
@@ -114,7 +118,7 @@ class DOMTokenListImpl {
 
   remove(...tokens) {
     for (const token of tokens) {
-      validateTokens(token);
+      validateTokens(this._globalObject, token);
     }
     this._syncWithElement();
     this._tokenSet.remove(...tokens);
@@ -122,7 +126,7 @@ class DOMTokenListImpl {
   }
 
   toggle(token, force = undefined) {
-    validateTokens(token);
+    validateTokens(this._globalObject, token);
     this._syncWithElement();
     if (this._tokenSet.contains(token)) {
       if (force === undefined || force === false) {
@@ -141,7 +145,7 @@ class DOMTokenListImpl {
   }
 
   replace(token, newToken) {
-    validateTokens(token, newToken);
+    validateTokens(this._globalObject, token, newToken);
     this._syncWithElement();
     if (!this._tokenSet.contains(token)) {
       return false;
