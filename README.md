@@ -28,6 +28,13 @@ The service account json in plain text, provided via a secret, etc.
 **Default:** `production`  
 _Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
 
+### `inAppUpdatePriority`
+
+In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority.
+
+**Default:** `0`
+_Values:_ `[0, 5]`
+
 ### `userFraction`
 
 Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive). Omitting this value will execute a full rollout.
@@ -72,7 +79,8 @@ with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
   releaseFile: ${{ SIGNED_RELEASE_FILE}}
-  track: beta
+  track: production
+  inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt

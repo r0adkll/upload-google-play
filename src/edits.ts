@@ -22,6 +22,7 @@ export interface EditOptions {
     auth: Compute | JWT | UserRefreshClient;
     applicationId: string;
     track: string;
+    inAppUpdatePriority: number;
     userFraction?: number;
     whatsNewDir?: string;
     mappingFile?: string;

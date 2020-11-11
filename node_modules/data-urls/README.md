@@ -3,7 +3,7 @@
 This package helps you parse `data:` URLs [according to the WHATWG Fetch Standard](https://fetch.spec.whatwg.org/#data-urls):
 
 ```js
-const parseDataURL = require("data-url");
+const parseDataURL = require("data-urls");
 
 const textExample = parseDataURL("data:,Hello%2C%20World!");
 console.log(textExample.mimeType.toString()); // "text/plain;charset=US-ASCII"
@@ -37,7 +37,7 @@ Because Node.js's `Buffer.prototype.toString()` assumes a UTF-8 encoding, simply
 A more complete decoding example would use the [whatwg-encoding](https://www.npmjs.com/package/whatwg-encoding) package as follows:
 
 ```js
-const parseDataURL = require("data-url");
+const parseDataURL = require("data-urls");
 const { labelToName, decode } = require("whatwg-encoding");
 
 const dataURL = parseDataURL(arbitraryString);
@@ -55,7 +55,7 @@ If you are using the [whatwg-url](https://github.com/jsdom/whatwg-url) package, 
 
 ```js
 const { parseURL } = require("whatwg-url");
-const dataURLFromURLRecord = require("data-url").fromURLRecord;
+const dataURLFromURLRecord = require("data-urls").fromURLRecord;
 
 const urlRecord = parseURL("data:,Hello%2C%20World!");
 const dataURL = dataURLFromURLRecord(urlRecord);

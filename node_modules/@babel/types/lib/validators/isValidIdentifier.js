@@ -5,20 +5,18 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.default = isValidIdentifier;
 
-var _esutils = _interopRequireDefault(require("esutils"));
-
-function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+var _helperValidatorIdentifier = require("@babel/helper-validator-identifier");
 
 function isValidIdentifier(name, reserved = true) {
   if (typeof name !== "string") return false;
 
   if (reserved) {
-    if (_esutils.default.keyword.isReservedWordES6(name, true)) {
+    if ((0, _helperValidatorIdentifier.isKeyword)(name) || (0, _helperValidatorIdentifier.isStrictReservedWord)(name)) {
       return false;
     } else if (name === "await") {
       return false;
     }
   }
 
-  return _esutils.default.keyword.isIdentifierNameES6(name);
+  return (0, _helperValidatorIdentifier.isIdentifierName)(name);
 }

@@ -1,7 +1,9 @@
 "use strict";
 
 exports.implementation = class ValidityStateImpl {
-  constructor(element, state = {}) {
+  constructor(globalObject, args, privateData) {
+    const { element, state = {} } = privateData;
+
     this._element = element;
     this._state = state;
   }
@@ -50,7 +52,7 @@ exports.implementation = class ValidityStateImpl {
   _failsConstraint(method) {
     const validationMethod = this._state[method];
     if (validationMethod) {
-      return this._element.willValidate && validationMethod();
+      return validationMethod();
     }
 
     return false;
