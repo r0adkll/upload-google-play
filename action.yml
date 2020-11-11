@@ -14,9 +14,12 @@ inputs:
   packageName:
     description: 'The package name, or Application Id, of the app you are uploading'
     required: true
+  releaseFile:
+    description: 'The Android release file to upload (.apk or .aab)'
+    required: false
   releaseFiles:
     description: "The Android release file(s) to upload (.apk or .aab). Separated by  a ',' for multiple artifacts"
-    required: true
+    required: false
   releaseName:
     description: 'The name of this release. If not set it's generated automatically from the APKs versionName'
     required: false

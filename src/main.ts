@@ -12,7 +12,10 @@ async function run() {
         const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
-        const releaseFiles = core.getInput('releaseFiles', { required: true }).split(',').filter(x => x !== '');
+        const releaseFile = core.getInput('releaseFile', { required: false });
+        const releaseFiles = core.getInput('releaseFiles', { required: false })
+            ?.split(',')
+            ?.filter(x => x !== '') || [];
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
@@ -24,6 +27,7 @@ async function run() {
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
             console.log("No service account json key provided!");
             core.setFailed("You must provide one of 'serviceAccountJson' or 'serviceAccountJsonPlainText' to use this action");
+            return;
         }
 
         // If the user has provided the raw plain text via secrets, or w/e, then write to file and
@@ -65,13 +69,29 @@ async function run() {
             inAppUpdatePriorityInt = undefined;
         }
 
-        // Check release files
-        for (const releaseFile of releaseFiles) {
+        // Check release files while maintaining backward compatibility
+        let validatedReleaseFiles: string[] = [];
+        if (releaseFiles.length == 0 && !releaseFile) {
+            core.setFailed(`You must provide either 'releaseFile' or 'releaseFiles' in your configuration.`);
+            return;
+        } else if (releaseFiles.length == 0 && releaseFile) {
+            core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'.`);
             core.debug(`Validating ${releaseFile} exists`)
             if (!fs.existsSync(releaseFile)) {
                 core.setFailed(`Unable to find release file @ ${releaseFile}`);
-                return
+                return;
+            } else {
+                validatedReleaseFiles = [releaseFile];
             }
+        } else if (releaseFiles.length > 0) {
+            for (const file of releaseFiles) {
+                core.debug(`Validating ${file} exists`)
+                if (!fs.existsSync(file)) {
+                    core.setFailed(`Unable to find release file @ ${file}`);
+                    return;
+                }
+            }
+            validatedReleaseFiles = releaseFiles;
         }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
@@ -95,7 +115,7 @@ async function run() {
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             name: releaseName
-        }, releaseFiles);
+        }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store`)
     } catch (error) {
