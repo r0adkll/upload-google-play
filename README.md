@@ -18,9 +18,9 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The package name, or Application Id, of the app you are uploading
 
-### `releaseFile`
+### `releaseFiles`
 
-**Required:** The Android release file to upload (.apk or .aab) 
+**Required:** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','.
 
 ### `track`
 
