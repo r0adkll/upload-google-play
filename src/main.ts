@@ -56,7 +56,7 @@ async function run() {
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
         let inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
-        if (~isNaN(inAppUpdatePriorityInt)) {
+        if (!isNaN(inAppUpdatePriorityInt)) {
             if (inAppUpdatePriorityInt < 0 || inAppUpdatePriorityInt > 5) {
                 core.setFailed('inAppUpdatePriority must be between 0 and 5, inclusive-inclusive');
                 return;
