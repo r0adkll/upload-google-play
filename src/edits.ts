@@ -77,6 +77,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         // Simple check to see whether commit was successful
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
+            core.setOutput("releaseName", getPublishedReleaseName(res.data, options))
             return Promise.resolve(res.data.id!);
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);
@@ -237,4 +238,13 @@ async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleas
     });
 
     return res.data
+}
+
+async function getPublishedReleaseName(appEdit: AppEdit, options: EditOptions): Promise<String | null | undefined> {
+    const track = await androidPublisher.edits.tracks.get({
+        editId: appEdit.id!,
+        track: options.track
+    })
+    const release = track.data.releases![0] // We only ever create one release, so grab the first one
+    return release.name
 }
