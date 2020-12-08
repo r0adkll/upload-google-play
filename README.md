@@ -72,6 +72,10 @@ The mapping.txt file used to de-obfuscate your stack traces from crash reports
 
 ## Outputs
 
+### `releaseName`
+
+The name of the release published to Google Play, which is generated on commit by default
+
 ### `internalSharingDownloadUrl`
 
 The download url for an app that was uploaded using the `track` `internalsharing`
