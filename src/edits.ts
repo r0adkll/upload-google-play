@@ -77,7 +77,8 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         // Simple check to see whether commit was successful
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
-            core.setOutput("releaseName", getPublishedReleaseName(res.data, options))
+            const name = options.name || getPublishedReleaseName(res.data, options);
+            core.setOutput("releaseName", name)
             return Promise.resolve(res.data.id!);
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);
