@@ -243,6 +243,7 @@ async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleas
 
 async function getPublishedReleaseName(appEdit: AppEdit, options: EditOptions): Promise<String | null | undefined> {
     const track = await androidPublisher.edits.tracks.get({
+        auth: options.auth,
         editId: appEdit.id!,
         track: options.track,
         packageName: options.applicationId
