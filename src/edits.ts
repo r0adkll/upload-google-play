@@ -244,9 +244,9 @@ async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleas
 async function getPublishedReleaseName(appEdit: AppEdit, options: EditOptions): Promise<String | null | undefined> {
     const track = await androidPublisher.edits.tracks.get({
         auth: options.auth,
+        packageName: options.applicationId,
         editId: appEdit.id!,
-        track: options.track,
-        packageName: options.applicationId
+        track: options.track
     })
     const release = track.data.releases![0] // We only ever create one release, so grab the first one
     return release.name
