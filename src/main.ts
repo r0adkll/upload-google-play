@@ -106,7 +106,7 @@ async function run() {
 
         const authClient = await auth.getClient();
 
-        await uploadToPlayStore({
+        const result = await uploadToPlayStore({
             auth: authClient,
             applicationId: packageName,
             track: track,
@@ -117,7 +117,7 @@ async function run() {
             name: releaseName
         }, validatedReleaseFiles);
 
-        console.log(`Finished uploading to the Play Store`)
+        console.log(`Finished uploading to the Play Store: ${result}`)
     } catch (error) {
         core.setFailed(error.message)
     }

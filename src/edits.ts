@@ -54,7 +54,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         });
 
         // Upload artifacts to Google Play, and store their version codes
-        var versionCodes = new Array<number>();
+        const versionCodes = new Array<number>();
         for (const releaseFile of releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
             const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
@@ -66,6 +66,15 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Add the uploaded artifacts to the Edit track
         const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
+        core.debug(`Track: ${track}`);
+
+        // Extract the release name for the response
+        let trackReleaseName: string | undefined | null;
+        if (track.releases && track.releases.length > 0) {
+            const trackRelease = track.releases[0];
+            trackReleaseName = trackRelease.name;
+            core.debug(`Pulled track release name from update: ${trackReleaseName}`)
+        }
 
         // Commit the pending Edit
         const res = await androidPublisher.edits.commit({
@@ -77,8 +86,12 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         // Simple check to see whether commit was successful
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
-            const name = options.name || (await getPublishedReleaseName(res.data, options));
-            core.setOutput("releaseName", name)
+            const name = options.name || trackReleaseName;
+            if (name) {
+                core.setOutput("releaseName", name);
+            } else {
+                core.debug("Unable to set 'releaseName' output.");
+            }
             return Promise.resolve(res.data.id!);
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);
@@ -239,15 +252,4 @@ async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleas
     });
 
     return res.data
-}
-
-async function getPublishedReleaseName(appEdit: AppEdit, options: EditOptions): Promise<String | null | undefined> {
-    const track = await androidPublisher.edits.tracks.get({
-        auth: options.auth,
-        packageName: options.applicationId,
-        editId: appEdit.id!,
-        track: options.track
-    })
-    const release = track.data.releases![0] // We only ever create one release, so grab the first one
-    return release.name
 }
