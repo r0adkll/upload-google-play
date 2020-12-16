@@ -42,12 +42,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         }
     } else {
         // Create a new Edit
+        core.info(`Creating a new Edit for this release`)
         const appEdit = await androidPublisher.edits.insert({
             auth: options.auth,
             packageName: options.applicationId
         });
 
         // Validate the given track
+        core.info(`Validating track '${options.track}'`)
         await validateSelectedTrack(appEdit.data, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
@@ -56,15 +58,17 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         // Upload artifacts to Google Play, and store their version codes
         const versionCodes = new Array<number>();
         for (const releaseFile of releaseFiles) {
-            core.debug(`Uploading ${releaseFile}`);
+            core.info(`Uploading ${releaseFile}`);
             const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
                 core.setFailed(reason);
                 return Promise.reject(reason);
             });
             versionCodes.push(versionCode!);
         }
+        core.info(`Successfully uploaded ${versionCodes.length} artifacts`)
 
         // Add the uploaded artifacts to the Edit track
+        core.info(`Adding ${versionCodes.length} artifacts to release on '${options.track}' track`)
         const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
         core.debug(`Track: ${track}`);
 
@@ -74,9 +78,12 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
             const trackRelease = track.releases[0];
             trackReleaseName = trackRelease.name;
             core.debug(`Pulled track release name from update: ${trackReleaseName}`)
+        } else {
+            core.debug(`Didn't find any releases on the track`)
         }
 
         // Commit the pending Edit
+        core.info(`Committing the Edit`)
         const res = await androidPublisher.edits.commit({
             auth: options.auth,
             editId: appEdit.data.id!,
@@ -87,6 +94,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         if (res.data.id != null) {
             core.debug(`Successfully committed ${res.data.id}`);
             const name = options.name || trackReleaseName;
+            core.info(`Successfully committed release ${name}`)
             if (name) {
                 core.setOutput("releaseName", name);
             } else {
