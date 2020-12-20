@@ -270,5 +270,5 @@ async function getTrackData(appEdit: AppEdit, options: EditOptions): Promise<and
         packageName: options.applicationId
     });
 
-    return tracks[0];
+    return tracks.data.tracks!.find(value => value.track == options.track)!;
 }
