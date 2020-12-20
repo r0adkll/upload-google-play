@@ -75,12 +75,8 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         // Extract the release name for the response
         let trackReleaseName: string | undefined | null;
         if (track.releases && track.releases.length > 0) {
-            const tracks = await androidPublisher.edits.tracks.list({
-                auth: options.auth,
-                editId: appEdit.data.id!,
-                packageName: options.applicationId
-            })
-            const trackRelease = tracks.data.tracks![0].releases![0];
+            const track = await getTrackData(appEdit.data, options);
+            const trackRelease = track.releases![0];
             trackReleaseName = trackRelease.name;
             core.debug(`Pulled track release name from update: ${trackReleaseName}`)
         } else {
@@ -265,4 +261,14 @@ async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleas
     });
 
     return res.data
+}
+
+async function getTrackData(appEdit: AppEdit, options: EditOptions): Promise<androidpublisher_v3.Schema$Track> {
+    const tracks = await androidPublisher.edits.tracks.list({
+        auth: options.auth,
+        editId: appEdit.id!,
+        packageName: options.applicationId
+    });
+
+    return tracks[0];
 }
