@@ -111,10 +111,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 async function uploadInternalSharingRelease(options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
         const res = await internalSharingUploadApk(options, releaseFile)
+        core.setOutput("internalSharingDownloadUrl", res.downloadUrl);
+        core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URL", res.downloadUrl);
         console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
         return Promise.resolve(res.downloadUrl)
     } else if (releaseFile.endsWith('.aab')) {
         const res = await internalSharingUploadBundle(options, releaseFile)
+        core.setOutput("internalSharingDownloadUrl", res.downloadUrl);
+        core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URL", res.downloadUrl);
         console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
         return Promise.resolve(res.downloadUrl)
     } else {
