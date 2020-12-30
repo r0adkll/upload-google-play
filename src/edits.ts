@@ -33,13 +33,20 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
+        let downloadUrls: string[] = []
         for (const releaseFile of releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
-            await uploadInternalSharingRelease(options, releaseFile).catch(reason => {
-                core.setFailed(reason);
-                return Promise.reject(reason);
-            });
+            await uploadInternalSharingRelease(options, releaseFile)
+                .then(downloadUrl => {
+                    downloadUrls.push(downloadUrl as string)
+                })
+                .catch(reason => {
+                    core.setFailed(reason);
+                    return Promise.reject(reason);
+                });
         }
+        core.setOutput("internalSharingDownloadUrls", downloadUrls);
+        core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URLS", downloadUrls);
     } else {
         // Create a new Edit
         core.info(`Creating a new Edit for this release`)
@@ -111,10 +118,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 async function uploadInternalSharingRelease(options: EditOptions, releaseFile: string): Promise<string | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
         const res = await internalSharingUploadApk(options, releaseFile)
+        core.setOutput("internalSharingDownloadUrl", res.downloadUrl);
+        core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URL", res.downloadUrl);
         console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
         return Promise.resolve(res.downloadUrl)
     } else if (releaseFile.endsWith('.aab')) {
         const res = await internalSharingUploadBundle(options, releaseFile)
+        core.setOutput("internalSharingDownloadUrl", res.downloadUrl);
+        core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URL", res.downloadUrl);
         console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
         return Promise.resolve(res.downloadUrl)
     } else {
