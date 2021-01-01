@@ -79,16 +79,6 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
         core.debug(`Track: ${track}`);
 
-        // Extract the release name for the response
-        let trackReleaseName: string | undefined | null;
-        if (track.releases && track.releases.length > 0) {
-            const trackRelease = track.releases[0];
-            trackReleaseName = trackRelease.name;
-            core.debug(`Pulled track release name from update: ${trackReleaseName}`)
-        } else {
-            core.debug(`Didn't find any releases on the track`)
-        }
-
         // Commit the pending Edit
         core.info(`Committing the Edit`)
         const res = await androidPublisher.edits.commit({
@@ -99,14 +89,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Simple check to see whether commit was successful
         if (res.data.id != null) {
-            core.debug(`Successfully committed ${res.data.id}`);
-            const name = options.name || trackReleaseName;
-            core.info(`Successfully committed release ${name}`)
-            if (name) {
-                core.setOutput("releaseName", name);
-            } else {
-                core.debug("Unable to set 'releaseName' output.");
-            }
+            core.info(`Successfully committed ${res.data.id}`);
             return Promise.resolve(res.data.id!);
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);
