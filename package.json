@@ -3,7 +3,7 @@
   "version": "1.0.10",
   "private": true,
   "description": "Upload an Android release (.apk or .aab) to Google Play Console",
-  "main": "lib/main.js",
+  "main": "lib/index.js",
   "scripts": {
     "build": "ncc build src/main.ts -o lib/",
     "test": "jest"
