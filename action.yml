@@ -1,9 +1,9 @@
-name: 'Upload Android Release to Play Store'
+name: "Upload Android Release to Play Store"
 description: "An action to upload a signed Android release (.apk or .aab) to the Google Play Store Developer Console"
-author: 'r0adkll'
+author: "r0adkll"
 branding:
-  icon: 'truck'
-  color: 'orange'
+  icon: "truck"
+  color: "orange"
 inputs:
   serviceAccountJson:
     description: "The service account json private key file to authorize the upload request"
@@ -18,18 +18,18 @@ inputs:
     description: "The Android release file to upload (.apk or .aab)"
     required: false
   releaseFiles:
-    description: "The Android release file(s) to upload (.apk or .aab). Separated by  a ',' for multiple artifacts"
+    description: "The Android release file(s) to upload (.apk or .aab). Separated by  a ',' for multiple artifacts. Supports glob"
     required: false
   releaseName:
     description: "The name of this release. If not set it's generated automatically from the APKs versionName"
     required: false
   track:
     description: "The track in which you want to assign the uploaded app."
-    default: 'production'
+    default: "production"
     required: true
   inAppUpdatePriority:
     description: "In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority. Defaults to 0."
-    default: '0'
+    default: "0"
     required: false
   userFraction:
     description: "Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive)."
@@ -44,5 +44,5 @@ outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
 runs:
-  using: 'node12'
-  main: 'lib/main.js'
+  using: "node12"
+  main: "lib/main.js"
