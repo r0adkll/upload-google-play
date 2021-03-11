@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
+import fg from "fast-glob";
 import { uploadToPlayStore } from "./edits";
 const {google} = require('googleapis');
 
@@ -84,14 +85,13 @@ async function run() {
                 validatedReleaseFiles = [releaseFile];
             }
         } else if (releaseFiles.length > 0) {
-            for (const file of releaseFiles) {
-                core.debug(`Validating ${file} exists`)
-                if (!fs.existsSync(file)) {
-                    core.setFailed(`Unable to find release file @ ${file}`);
-                    return;
-                }
+            core.debug(`Finding files using glob ${releaseFiles}`)
+            const files = await fg(releaseFiles);
+            if (!files.length) {
+                core.setFailed(`Unable to find any release file @ ${releaseFiles}`);
+                return;
             }
-            validatedReleaseFiles = releaseFiles;
+            validatedReleaseFiles = files;
         }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
