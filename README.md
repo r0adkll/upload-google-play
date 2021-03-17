@@ -102,3 +102,17 @@ with:
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
 ```
+
+Using glob to get release files
+```yaml
+uses: r0adkll/upload-google-play@v1
+with:
+  serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
+  packageName: com.example.MyApp
+  releaseFiles: app/build/outputs/bundle/release/*.aab
+  track: production
+  inAppUpdatePriority: 2
+  userFraction: 0.33
+  whatsNewDirectory: distribution/whatsnew
+  mappingFile: app/build/outputs/mapping/release/mapping.txt
+```
