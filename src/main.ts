@@ -85,10 +85,10 @@ async function run() {
                 validatedReleaseFiles = [releaseFile];
             }
         } else if (releaseFiles.length > 0) {
-            core.debug(`Finding files using glob ${releaseFiles}`)
+            core.debug(`Finding files ${releaseFiles.join(',')}`)
             const files = await fg(releaseFiles);
             if (!files.length) {
-                core.setFailed(`Unable to find any release file @ ${releaseFiles}`);
+                core.setFailed(`Unable to find any release file @ ${releaseFiles.join(',')}`);
                 return;
             }
             validatedReleaseFiles = files;
