@@ -19,13 +19,13 @@ The service account json in plain text, provided via a secret, etc.
 **Required:** The package name, or Application Id, of the app you are uploading
 
 ### `releaseFile`
-**DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future  
-The Android release file to upload (.apk or .aab) 
+**DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
+The Android release file to upload (.apk or .aab)
 
 ### `releaseFiles`
-**CAVEAT:** Either this or `releaseFile` are required  
+**CAVEAT:** Either this or `releaseFile` are required
 
-The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','.
+The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
 
 ### `releaseName`
 
@@ -33,15 +33,15 @@ The release name. Not required to be unique. If not set, the name is generated f
 
 ### `track`
 
-**Required:** The track in which you want to assign the uploaded app.  
-**Default:** `production`   
+**Required:** The track in which you want to assign the uploaded app.
+**Default:** `production`
 _Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
 
 ### `inAppUpdatePriority`
 
 In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority.
 
-**Default:** `0`  
+**Default:** `0`
 _Values:_ `[0, 5]`
 
 ### `userFraction`
@@ -53,7 +53,7 @@ Portion of users who should get the staged version of the app. Accepts values be
 The directory of localized whats new files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, e.g.
 * `en-US` - English/America
 * `de-DE` - German/Germany
-* `ja-JP` - Japanese/Japan  
+* `ja-JP` - Japanese/Japan
 
 and contain plain `utf8` encoded text with no extension on the file. The resulting directory in your project should look something like this:
 ```
@@ -96,6 +96,20 @@ with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
   releaseFile: ${{ SIGNED_RELEASE_FILE}}
+  track: production
+  inAppUpdatePriority: 2
+  userFraction: 0.33
+  whatsNewDirectory: distribution/whatsnew
+  mappingFile: app/build/outputs/mapping/release/mapping.txt
+```
+
+Using glob to get release files
+```yaml
+uses: r0adkll/upload-google-play@v1
+with:
+  serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
+  packageName: com.example.MyApp
+  releaseFiles: app/build/outputs/bundle/release/*.aab
   track: production
   inAppUpdatePriority: 2
   userFraction: 0.33
