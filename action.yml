@@ -45,4 +45,4 @@ outputs:
     description: "The internal app sharing download url if track was 'internalsharing'"
 runs:
   using: 'node12'
-  main: 'lib/main.js'
+  main: 'lib/index.js'
