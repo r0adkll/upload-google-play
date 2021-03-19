@@ -119,7 +119,7 @@ async function run() {
 
         console.log(`Finished uploading to the Play Store: ${result}`)
     } catch (error) {
-        core.setFailed(error.message)
+        core.setFailed(`Unknown Error in Upload(${error}): ${error.message}`);
     }
 }
 
