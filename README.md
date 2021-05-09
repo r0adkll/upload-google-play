@@ -65,6 +65,14 @@ projectDir/
 ```
 where `whatsNewDirectory` is the path you pass to the action.
 
+When providing a `whatsNewDirectory`, please ensure that the repo is checked out in a previous step. Without this step, the action will fail with error message '`Unable to find 'whatsnew' directory @ ...`'
+
+```yml
+    steps:
+
+      - name: Checkout code to get release notes
+        uses: actions/checkout@v2
+```
 
 ### `mappingFile`
 
