@@ -27,6 +27,7 @@ export interface EditOptions {
     whatsNewDir?: string;
     mappingFile?: string;
     name?: string;
+    status?: string;
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
@@ -143,14 +144,16 @@ async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Pr
 }
 
 async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
-    let status: string;
-    if (options.userFraction != undefined) {
-        status = 'inProgress';
-    } else {
-        status = 'completed';
+    let status: string | undefined = options.status;
+    if (status == undefined) {
+        if (options.userFraction != undefined) {
+            status = 'inProgress';
+        } else {
+            status = 'completed';
+        }
     }
 
-    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}) and VersionCodes(${versionCodes})`);
+    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,

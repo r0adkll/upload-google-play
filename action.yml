@@ -34,6 +34,9 @@ inputs:
   userFraction:
     description: "Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive)."
     required: false
+  status:
+    description: "Release status. This can be set to 'draft' to complete the release at some other time."
+    required: false
   whatsNewDirectory:
     description: "The directory of localized whats new files"
     required: false

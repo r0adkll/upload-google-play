@@ -48,6 +48,14 @@ _Values:_ `[0, 5]`
 
 Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive). Omitting this value will execute a full rollout.
 
+### `status`
+
+Release status. This can be set to `draft` to complete the release at some other time.
+
+**Default:** `inProgress` if `userFraction` is specified, otherwise `completed`
+
+_Values:_ `completed`, `inProgress`, `draft`, `halted`
+
 ### `whatsNewDirectory`
 
 The directory of localized whats new files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, e.g.
