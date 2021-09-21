@@ -6,10 +6,11 @@ import {androidpublisher_v3} from "googleapis";
 import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
 
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
+    core.debug(`Executing readLocalizedReleaseNotes`);
     if (whatsNewDir != undefined && whatsNewDir.length > 0) {
         const releaseNotes = fs.readdirSync(whatsNewDir)
-            .filter(value => /whatsnew-.*-.{2,3}\b/.test(value));
-        const pattern = /whatsnew-(?<local>.*-.*)/;
+            .filter(value => /whatsnew-((.*-.*)|(.*))\b/.test(value));
+        const pattern = /whatsnew-(?<local>(.*-.*)|(.*))/;
 
         let localizedReleaseNotes: LocalizedText[] = [];
 
@@ -17,7 +18,7 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
         releaseNotes.forEach(value => {
             const matches = value.match(pattern);
             core.debug(`Matches for ${value} = ${matches}`);
-            if (matches != undefined && matches.length == 2) {
+            if (matches != undefined && matches.length == 4) {
                 const lang = matches[1];
                 const filePath = path.join(whatsNewDir, value);
                 const content = readFileSync(filePath, 'utf-8');
