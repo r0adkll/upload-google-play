@@ -86,7 +86,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         const res = await androidPublisher.edits.commit({
             auth: options.auth,
             editId: appEdit.data.id!,
-            packageName: options.applicationId
+            packageName: options.applicationId,
             changesNotSentForReview: options.changesNotSentForReview
         });
 
@@ -169,7 +169,6 @@ async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versio
                         name: options.name,
                         userFraction: options.userFraction,
                         status: status,
-                        changesNotSentForReview: options.changesNotSentForReview,
                         inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
                         versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
