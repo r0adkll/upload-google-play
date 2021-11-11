@@ -169,6 +169,7 @@ async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versio
                         name: options.name,
                         userFraction: options.userFraction,
                         status: status,
+                        changesNotSentForReview: options.changesNotSentForReview,
                         inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
                         versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
