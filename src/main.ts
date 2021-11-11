@@ -22,6 +22,7 @@ async function run() {
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false });
         const status = core.getInput('status', { required: false });
+        const changesNotSentForReview = core.getInput('changesNotSentForReview', {required: true});
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
 
@@ -114,6 +115,7 @@ async function run() {
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
             userFraction: userFractionFloat,
             status: status,
+            changesNotSentForReview: JSON.parse(changesNotSentForReview),
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             name: releaseName
