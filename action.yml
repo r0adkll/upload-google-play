@@ -1,4 +1,4 @@
-name: 'Upload Android Release to Play Store'
+name: 'Upload Android application to Play Store'
 description: "An action to upload a signed Android release (.apk or .aab) to the Google Play Store Developer Console"
 author: 'r0adkll'
 branding:

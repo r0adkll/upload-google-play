@@ -99,7 +99,7 @@ The environment variable that is set when using the `track` `internalsharing`
 ## Example usage
 
 ```yaml
-uses: swootte/upload-google-play@v1
+uses: swootte/upload-google-play@V1.1.3
 with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
@@ -115,7 +115,7 @@ with:
 
 Using glob to get release files
 ```yaml
-uses: swootte/upload-google-play@v1
+uses: swootte/upload-google-play@V1.1.3
 with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
