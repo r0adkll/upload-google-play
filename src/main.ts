@@ -52,7 +52,7 @@ async function run() {
         // Validate user fraction as a number, and within [0.0, 1.0]
         let userFractionFloat: number | undefined = parseFloat(userFraction);
         if (!isNaN(userFractionFloat)) {
-            if (userFractionFloat <= 0.0 || userFractionFloat >= 1.0) {
+            if (userFractionFloat < 0.0 || userFractionFloat > 1.0) {
                 core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
                 return;
             }
