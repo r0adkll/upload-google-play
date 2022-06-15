@@ -4,85 +4,20 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 
 ## Inputs
 
-### `releaseFiles`
-
-**Required** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
-
-### `serviceAccountJsonPlainText`
-
-**Required** The service account json in plain text, provided via a secret, etc.
-
-### `packageName`
-
-**Required** The package name, or Application Id, of the app you are uploading
-
-### `track`
-
-**Required:** The track in which you want to assign the uploaded app.
-
-**Default:** `production`
-
-_Values:_ `production`, `beta`, `alpha`, `internal`, `internalsharing`
-
-If you have a custom track set up in the Play Console, you can publish to that too. Names are case-sensitive and should match exactly what is entered in the console.
-
-### `releaseName`
-
-The release name. Not required to be unique. If not set, the name is generated from the APK's versionName. If the release contains multiple APKs, the name is generated from the date.
-
-### `inAppUpdatePriority`
-
-In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority.
-
-**Default:** `0`
-
-_Values:_ `[0, 5]`
-
-### `userFraction`
-
-Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive). Omitting this value will execute a full rollout.
-
-### `status`
-
-Release status. This can be set to `draft` to complete the release at some other time.
-
-**Default:** `inProgress` if `userFraction` is specified, otherwise `completed`
-
-_Values:_ `completed`, `inProgress`, `draft`, `halted`
-
-### `whatsNewDirectory`
-
-The directory of localized whats new files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, e.g.
-
-* `en-US` - English/America
-* `de-DE` - German/Germany
-* `ja-JP` - Japanese/Japan
-
-and contain plain `utf8` encoded text with no extension on the file. The resulting directory in your project should look something like this:
-
-```
-projectDir/
-└─ whatsNewDirectory/
-  ├─ whatsnew-en-US
-  ├─ whatsnew-de-DE
-  └─ whatsnew-ja-JP
-```
-
-where `whatsNewDirectory` is the path you pass to the action.
-
-### `mappingFile`
-
-The mapping.txt file used to de-obfuscate your stack traces from crash reports
-
-### `serviceAccountJson`
-
-The service account json private key file to authorize the upload request.
-
-Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret
-
-### ~~`releaseFile`~~
-
-**DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
+| Input | Description | Value | Required |
+| --- | --- | --- | --- |
+| releaseFiles | The Android release file(s) to upload (.apk or .aab) | Comma-separated paths. Supports glob via [fast-glob](https://github.com/mrmlnc/fast-glob) | true |
+| serviceAccountJsonPlainText | The service account json in plain text, provided via a secret, etc | The contents of your `service-account.json` | true |
+| packageName | The package name, or Application Id, of the app you are uploading | A valid package name, e.g. `com.example.myapp` | true |
+| track | The track in which you want to assign the uploaded app. Defaults to `production` | One of `production`, `beta`, `alpha`, `internalsharing`, `internal`, or a custom track name (case sensitive) | true |
+| releaseName | The release name. Not required to be unique | A user-friendly update name, e.g. `v1.0.0` | false |
+| inAppUpdatePriority | In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Defaults to `0` | `[0-5]`, where `5` is the highest priority | false |
+| userFraction | Percentage of users who should get the staged version of the app. Defaults to `1.0` | `(0.0-1.0)` | false |
+| status | Release status. This can be set to `draft` to complete the release at some other time. Defaults to `completed` if targeting 100% rollout, else `inProgress` | One of `completed`, `inProgress`, `halted`, `draft` | false |
+| whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
+| mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
+| serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | false |
+| ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
 
 ## Outputs
 
