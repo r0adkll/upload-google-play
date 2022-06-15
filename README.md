@@ -4,8 +4,6 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 
 ## Inputs
 
-_You must provide one of either `serviceAccountJson` or `serviceAccountJsonPlainText`_
-
 ### `releaseFiles`
 
 **Required** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
@@ -24,7 +22,7 @@ _You must provide one of either `serviceAccountJson` or `serviceAccountJsonPlain
 
 **Default:** `production`
 
-_Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
+_Values:_ `production`, `beta`, `alpha`, `internal`, `internalsharing`
 
 If you have a custom track set up in the Play Console, you can publish to that too. Names are case-sensitive and should match exactly what is entered in the console.
 
