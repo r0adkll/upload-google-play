@@ -18,7 +18,7 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The package name, or Application Id, of the app you are uploading
 
-### `releaseFile`
+### ~~`releaseFile`~~
 **DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
 The Android release file to upload (.apk or .aab)
 
@@ -103,8 +103,9 @@ uses: r0adkll/upload-google-play@v1
 with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
-  releaseFile: ${{ SIGNED_RELEASE_FILE}}
+  releaseFiles: ${{ SIGNED_RELEASE_FILE}}
   track: production
+  status: completed
   inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
@@ -119,6 +120,7 @@ with:
   packageName: com.example.MyApp
   releaseFiles: app/build/outputs/bundle/release/*.aab
   track: production
+  status: completed
   inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
