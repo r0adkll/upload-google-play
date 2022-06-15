@@ -19,10 +19,12 @@ The service account json in plain text, provided via a secret, etc.
 **Required:** The package name, or Application Id, of the app you are uploading
 
 ### ~~`releaseFile`~~
+
 **DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
 The Android release file to upload (.apk or .aab)
 
 ### `releaseFiles`
+
 **CAVEAT:** Either this or `releaseFile` are required
 
 The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
@@ -34,14 +36,19 @@ The release name. Not required to be unique. If not set, the name is generated f
 ### `track`
 
 **Required:** The track in which you want to assign the uploaded app.
+
 **Default:** `production`
+
 _Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
+
+If you have a custom track set up in the Play Console, you can publish to that too. Names are case-sensitive and should match exactly what is entered in the console.
 
 ### `inAppUpdatePriority`
 
 In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority.
 
 **Default:** `0`
+
 _Values:_ `[0, 5]`
 
 ### `userFraction`
@@ -59,20 +66,22 @@ _Values:_ `completed`, `inProgress`, `draft`, `halted`
 ### `whatsNewDirectory`
 
 The directory of localized whats new files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format, e.g.
+
 * `en-US` - English/America
 * `de-DE` - German/Germany
 * `ja-JP` - Japanese/Japan
 
 and contain plain `utf8` encoded text with no extension on the file. The resulting directory in your project should look something like this:
+
 ```
 projectDir/
-└── whatsNewDirectory/
-    ├── whatsnew-en-US
-    ├── whatsnew-de-DE
-    └── whatsnew-ja-JP
+└─ whatsNewDirectory/
+  ├─ whatsnew-en-US
+  ├─ whatsnew-de-DE
+  └─ whatsnew-ja-JP
 ```
-where `whatsNewDirectory` is the path you pass to the action.
 
+where `whatsNewDirectory` is the path you pass to the action.
 
 ### `mappingFile`
 
@@ -113,6 +122,7 @@ with:
 ```
 
 Using glob to get release files
+
 ```yaml
 uses: r0adkll/upload-google-play@v1
 with:
