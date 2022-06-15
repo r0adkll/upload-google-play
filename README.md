@@ -6,32 +6,17 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 
 _You must provide one of either `serviceAccountJson` or `serviceAccountJsonPlainText`_
 
-### `serviceAccountJson`
+### `releaseFiles`
 
-The service account json private key file to authorize the upload request
+**Required** The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
 
 ### `serviceAccountJsonPlainText`
 
-The service account json in plain text, provided via a secret, etc.
+**Required** The service account json in plain text, provided via a secret, etc.
 
 ### `packageName`
 
-**Required:** The package name, or Application Id, of the app you are uploading
-
-### ~~`releaseFile`~~
-
-**DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
-The Android release file to upload (.apk or .aab)
-
-### `releaseFiles`
-
-**CAVEAT:** Either this or `releaseFile` are required
-
-The Android release file(s) to upload (.apk or .aab). Multiple files are separated by ','. Supports glob.
-
-### `releaseName`
-
-The release name. Not required to be unique. If not set, the name is generated from the APK's versionName. If the release contains multiple APKs, the name is generated from the date.
+**Required** The package name, or Application Id, of the app you are uploading
 
 ### `track`
 
@@ -42,6 +27,10 @@ The release name. Not required to be unique. If not set, the name is generated f
 _Values:_ `alpha`, `beta`, `internal`, `production`, `internalsharing`
 
 If you have a custom track set up in the Play Console, you can publish to that too. Names are case-sensitive and should match exactly what is entered in the console.
+
+### `releaseName`
+
+The release name. Not required to be unique. If not set, the name is generated from the APK's versionName. If the release contains multiple APKs, the name is generated from the date.
 
 ### `inAppUpdatePriority`
 
@@ -87,6 +76,16 @@ where `whatsNewDirectory` is the path you pass to the action.
 
 The mapping.txt file used to de-obfuscate your stack traces from crash reports
 
+### `serviceAccountJson`
+
+The service account json private key file to authorize the upload request.
+
+Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret
+
+### ~~`releaseFile`~~
+
+**DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
+
 ## Outputs
 
 ### `internalSharingDownloadUrls`
@@ -110,23 +109,7 @@ The environment variable that is set when using the `track` `internalsharing`
 ```yaml
 uses: r0adkll/upload-google-play@v1
 with:
-  serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
-  packageName: com.example.MyApp
-  releaseFiles: ${{ SIGNED_RELEASE_FILE}}
-  track: production
-  status: completed
-  inAppUpdatePriority: 2
-  userFraction: 0.33
-  whatsNewDirectory: distribution/whatsnew
-  mappingFile: app/build/outputs/mapping/release/mapping.txt
-```
-
-Using glob to get release files
-
-```yaml
-uses: r0adkll/upload-google-play@v1
-with:
-  serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
+  serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
   releaseFiles: app/build/outputs/bundle/release/*.aab
   track: production
