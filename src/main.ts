@@ -120,8 +120,8 @@ async function run() {
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
-    } catch (error) {
-        core.setFailed(error.message)
+    } catch (error: any) {
+        core.setFailed(error.toString())
     }
 }
 
