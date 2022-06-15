@@ -21,8 +21,8 @@
   "license": "MIT",
   "dependencies": {
     "@actions/core": "^1.2.6",
-    "fast-glob": "^3.2.5",
-    "googleapis": "^68.0.0"
+    "@googleapis/androidpublisher": "^2.5.0",
+    "fast-glob": "^3.2.5"
   },
   "devDependencies": {
     "@types/jest": "^26.0.22",

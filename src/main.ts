@@ -1,8 +1,8 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
 import fg from "fast-glob";
-import { uploadToPlayStore } from "./edits";
-const {google} = require('googleapis');
+import {uploadToPlayStore} from "./edits";
+import * as google from '@googleapis/androidpublisher';
 
 const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
