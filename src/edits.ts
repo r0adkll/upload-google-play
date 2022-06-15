@@ -2,8 +2,8 @@ import * as core from '@actions/core';
 import * as fs from "fs";
 import {readFileSync} from "fs";
 
-import {google} from 'googleapis';
-import {androidpublisher_v3} from "googleapis";
+import * as google from '@googleapis/androidpublisher';
+import {androidpublisher_v3} from "@googleapis/androidpublisher";
 
 import AndroidPublisher = androidpublisher_v3.Androidpublisher;
 import AppEdit = androidpublisher_v3.Schema$AppEdit;
@@ -12,14 +12,13 @@ import Bundle = androidpublisher_v3.Schema$Bundle;
 import Track = androidpublisher_v3.Schema$Track;
 import InternalAppSharingArtifact = androidpublisher_v3.Schema$InternalAppSharingArtifact;
 import {Compute} from "google-auth-library/build/src/auth/computeclient";
-import {JWT} from "google-auth-library/build/src/auth/jwtclient";
-import {UserRefreshClient} from "google-auth-library/build/src/auth/refreshclient";
+import {JSONClient} from "google-auth-library/build/src/auth/googleauth"
 import {readLocalizedReleaseNotes} from "./whatsnew";
 
 const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 
 export interface EditOptions {
-    auth: Compute | JWT | UserRefreshClient;
+    auth: Compute | JSONClient;
     applicationId: string;
     track: string;
     inAppUpdatePriority: number;

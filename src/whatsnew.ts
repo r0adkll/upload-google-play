@@ -2,7 +2,7 @@ import * as core from '@actions/core';
 import * as fs from "fs";
 import * as path from "path";
 import {readFileSync} from "fs";
-import {androidpublisher_v3} from "googleapis";
+import {androidpublisher_v3} from "@googleapis/androidpublisher";
 import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
 
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
