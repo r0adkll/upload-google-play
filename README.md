@@ -18,7 +18,7 @@ The service account json in plain text, provided via a secret, etc.
 
 **Required:** The package name, or Application Id, of the app you are uploading
 
-### `releaseFile`
+### ~~`releaseFile`~~
 **DEPRECATED:** Please switch to using `releaseFiles` as this will be removed in the future
 The Android release file to upload (.apk or .aab)
 
@@ -47,6 +47,14 @@ _Values:_ `[0, 5]`
 ### `userFraction`
 
 Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive). Omitting this value will execute a full rollout.
+
+### `status`
+
+Release status. This can be set to `draft` to complete the release at some other time.
+
+**Default:** `inProgress` if `userFraction` is specified, otherwise `completed`
+
+_Values:_ `completed`, `inProgress`, `draft`, `halted`
 
 ### `whatsNewDirectory`
 
@@ -95,8 +103,9 @@ uses: r0adkll/upload-google-play@v1
 with:
   serviceAccountJson: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
-  releaseFile: ${{ SIGNED_RELEASE_FILE}}
+  releaseFiles: ${{ SIGNED_RELEASE_FILE}}
   track: production
+  status: completed
   inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
@@ -111,6 +120,7 @@ with:
   packageName: com.example.MyApp
   releaseFiles: app/build/outputs/bundle/release/*.aab
   track: production
+  status: completed
   inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew

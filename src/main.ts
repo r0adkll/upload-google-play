@@ -1,8 +1,8 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
 import fg from "fast-glob";
-import { uploadToPlayStore } from "./edits";
-const {google} = require('googleapis');
+import {uploadToPlayStore} from "./edits";
+import * as google from '@googleapis/androidpublisher';
 
 const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -21,6 +21,7 @@ async function run() {
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false });
+        const status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
 
@@ -112,13 +113,14 @@ async function run() {
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
             userFraction: userFractionFloat,
+            status: status,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             name: releaseName
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
-    } catch (error) {
+    } catch (error: any) {
         core.setFailed(error.message)
     } finally {
         if (core.getInput('serviceAccountJsonPlainText', { required: false})) {
