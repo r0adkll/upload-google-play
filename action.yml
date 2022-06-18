@@ -47,5 +47,5 @@ outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
 runs:
-  using: 'node12'
+  using: 'node16'
   main: 'lib/index.js'
