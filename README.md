@@ -16,6 +16,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | status | Release status. This can be set to `draft` to complete the release at some other time. Defaults to `completed` if targeting 100% rollout, else `inProgress` | One of `completed`, `inProgress`, `halted`, `draft` | false |
 | whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
 | mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
+| changesNotSentForReview | Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Defaults to `false` | `true` or `false` | `false` |
 | serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | true (or serviceAccountJsonPlainText) |
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
 

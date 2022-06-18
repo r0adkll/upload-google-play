@@ -43,6 +43,10 @@ inputs:
   mappingFile:
     description: "The mapping.txt file used to de-obfuscate your stack traces from crash reports"
     required: false
+  changesNotSentForReview:
+    description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console"
+    default: false
+    required: false
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
