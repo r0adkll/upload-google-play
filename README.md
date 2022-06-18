@@ -28,16 +28,28 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 
 ## Example usage
 
+The below example publishes `MyApp` to Google Play, targetting 33% (`0.33`) of users with a priority of `2`.
+
 ```yaml
 uses: r0adkll/upload-google-play@v1
 with:
   serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
-  releaseFiles: app/build/outputs/bundle/release/*.aab
+  releaseFiles: app/build/outputs/bundle/release/app-release.aab
   track: production
-  status: completed
+  status: inProgress
   inAppUpdatePriority: 2
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
+```
+
+The `whatsNewDirectory` in this example supplies changelogs for English, German and Japanese
+
+```
+distribution/
+└─ whatsnew/
+  ├─ whatsnew-en-US
+  ├─ whatsnew-de-DE
+  └─ whatsnew-ja-JP
 ```
