@@ -35,7 +35,7 @@ jobs:
       
       # If it did change, the authro forgot to build. Fail the action
       - name: Verify Build Updated
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        if: steps.verify-built-lib.outputs.files_changed == 'true'
         run: exit 1
 
       - name: Run Tests
