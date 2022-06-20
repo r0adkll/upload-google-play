@@ -93,7 +93,7 @@ async function run() {
         }
 
         if (status != undefined) {
-            core.warning(`WARNING!! 'status' is deprecated and will be removed in a future release. Status is inferred from given parameters`);
+            core.warning(`WARNING!! 'status' is deprecated and will be removed in a future release. Status is inferred from given parameters, and will be ignored`);
         }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
@@ -114,7 +114,6 @@ async function run() {
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
             userFraction: userFraction,
-            status: status,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             name: releaseName,
