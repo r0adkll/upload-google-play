@@ -67,7 +67,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         const versionCodes = new Array<number>();
         for (const releaseFile of releaseFiles) {
             core.info(`Uploading ${releaseFile}`);
-            const versionCode = await uploadRelease(appEdit.data, options, releaseFile).catch(reason => {
+            const versionCode = await uploadRelease(appEdit.data.id!, options, releaseFile).catch(reason => {
                 core.setFailed(reason);
                 return Promise.reject(reason);
             });
@@ -118,14 +118,14 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
     }
 }
 
-async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
+async function uploadRelease(appEditId: string, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
-        const apk = await uploadApk(appEdit.id!, options, releaseFile);
-        await uploadMappingFile(appEdit.id!, apk.versionCode!, options);
+        const apk = await uploadApk(appEditId, options, releaseFile);
+        await uploadMappingFile(appEditId, apk.versionCode!, options);
         return Promise.resolve(apk.versionCode);
     } else if (releaseFile.endsWith('.aab')) {
-        const bundle = await uploadBundle(appEdit.id!, options, releaseFile);
-        await uploadMappingFile(appEdit.id!, bundle.versionCode!, options);
+        const bundle = await uploadBundle(appEditId, options, releaseFile);
+        await uploadMappingFile(appEditId, bundle.versionCode!, options);
         return Promise.resolve(bundle.versionCode);
     } else {
         return Promise.reject(`${releaseFile} is invalid`);
