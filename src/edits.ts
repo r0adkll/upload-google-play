@@ -121,11 +121,11 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
 async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEdit, options, releaseFile);
-        await uploadMappingFile(appEdit, apk.versionCode!, options);
+        await uploadMappingFile(appEdit.id!, apk.versionCode!, options);
         return Promise.resolve(apk.versionCode);
     } else if (releaseFile.endsWith('.aab')) {
         const bundle = await uploadBundle(appEdit, options, releaseFile);
-        await uploadMappingFile(appEdit, bundle.versionCode!, options);
+        await uploadMappingFile(appEdit.id!, bundle.versionCode!, options);
         return Promise.resolve(bundle.versionCode);
     } else {
         return Promise.reject(`${releaseFile} is invalid`);
@@ -179,15 +179,15 @@ async function addReleasesToTrack(appEditId: string, options: EditOptions, versi
     return res.data;
 }
 
-async function uploadMappingFile(appEdit: AppEdit, versionCode: number, options: EditOptions) {
+async function uploadMappingFile(appEditId: string, versionCode: number, options: EditOptions) {
     if (options.mappingFile != undefined && options.mappingFile.length > 0) {
         const mapping = readFileSync(options.mappingFile, 'utf-8');
         if (mapping != undefined) {
-            core.debug(`[${appEdit.id}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Proguard mapping file @ ${options.mappingFile}`);
+            core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Proguard mapping file @ ${options.mappingFile}`);
             await androidPublisher.edits.deobfuscationfiles.upload({
                 auth: options.auth,
                 packageName: options.applicationId,
-                editId: appEdit.id!,
+                editId: appEditId,
                 apkVersionCode: versionCode,
                 deobfuscationFileType: 'proguard',
                 media: {
