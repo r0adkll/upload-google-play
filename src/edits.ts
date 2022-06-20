@@ -77,7 +77,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Add the uploaded artifacts to the Edit track
         core.info(`Adding ${versionCodes.length} artifacts to release on '${options.track}' track`)
-        const track = await addReleasesToTrack(appEdit.data, options, versionCodes);
+        const track = await addReleasesToTrack(appEdit.data.id!, options, versionCodes);
         core.debug(`Track: ${track}`);
 
         // Commit the pending Edit
@@ -144,7 +144,7 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
     }
 }
 
-async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versionCodes: number[]): Promise<Track> {
+async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
     let status: string | undefined = options.status;
     if (!status) {
         if (options.userFraction != undefined) {
@@ -154,11 +154,11 @@ async function addReleasesToTrack(appEdit: AppEdit, options: EditOptions, versio
         }
     }
 
-    core.debug(`Creating Track Release for Edit(${appEdit.id}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
+    core.debug(`Creating Track Release for Edit(${appEditId}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,
-            editId: appEdit.id!,
+            editId: appEditId,
             packageName: options.applicationId,
             track: options.track,
             requestBody: {
