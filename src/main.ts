@@ -25,6 +25,7 @@ async function run() {
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
+        const existingEditId = core.getInput('existingEditId')
 
         // Validate that we have a service account json in some format
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
@@ -119,7 +120,7 @@ async function run() {
             mappingFile: mappingFile,
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
-            existingEditId: undefined
+            existingEditId: existingEditId
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
