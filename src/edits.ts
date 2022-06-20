@@ -58,7 +58,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Validate the given track
         core.info(`Validating track '${options.track}'`)
-        await validateSelectedTrack(appEdit.data, options).catch(reason => {
+        await validateSelectedTrack(appEdit.data.id!, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
         });
@@ -132,10 +132,10 @@ async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile
     }
 }
 
-async function validateSelectedTrack(appEdit: AppEdit, options: EditOptions): Promise<undefined> {
+async function validateSelectedTrack(appEditId: string, options: EditOptions): Promise<undefined> {
     const res = await androidPublisher.edits.tracks.list({
         auth: options.auth,
-        editId: appEdit.id!,
+        editId: appEditId,
         packageName: options.applicationId
     });
     const allTracks = res.data.tracks;
