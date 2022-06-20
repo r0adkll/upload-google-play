@@ -97,6 +97,10 @@ async function run() {
             validatedReleaseFiles = files;
         }
 
+        if (status != undefined) {
+            core.warning(`WARNING!! 'status' is deprecated and will be removed in a future release. Status is inferred from given parameters`);
+        }
+
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
             return
