@@ -18,13 +18,25 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # Runs a single command using the runners shell
+      # Set up NPM and deps
       - name: Set up NPM
         run: npm ci
 
-      # Runs a set of commands using the runners shell
+      # Do a build
       - name: Run Build
         run: npm run build
       
+      # Check whether the compiled library changed
+      - name: Check Build Updated
+        uses: tj-actions/verify-changed-files@v9.2
+        id: verify-built-lib
+        with:
+          files: lib/index.js
+      
+      # If it did change, the authro forgot to build. Fail the action
+      - name: Verify Build Updated
+        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        run: exit 1
+
       - name: Run Tests
         run: npm test
