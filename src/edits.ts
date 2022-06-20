@@ -1,19 +1,18 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
-import {readFileSync} from "fs";
+import { readFileSync } from "fs";
 
 import * as google from '@googleapis/androidpublisher';
-import {androidpublisher_v3} from "@googleapis/androidpublisher";
+import { androidpublisher_v3 } from "@googleapis/androidpublisher";
 
 import AndroidPublisher = androidpublisher_v3.Androidpublisher;
-import AppEdit = androidpublisher_v3.Schema$AppEdit;
 import Apk = androidpublisher_v3.Schema$Apk;
 import Bundle = androidpublisher_v3.Schema$Bundle;
 import Track = androidpublisher_v3.Schema$Track;
 import InternalAppSharingArtifact = androidpublisher_v3.Schema$InternalAppSharingArtifact;
-import {Compute} from "google-auth-library/build/src/auth/computeclient";
-import {JSONClient} from "google-auth-library/build/src/auth/googleauth"
-import {readLocalizedReleaseNotes} from "./whatsnew";
+import { Compute } from "google-auth-library/build/src/auth/computeclient";
+import { JSONClient } from "google-auth-library/build/src/auth/googleauth"
+import { readLocalizedReleaseNotes } from "./whatsnew";
 
 const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 
@@ -28,6 +27,7 @@ export interface EditOptions {
     name?: string;
     status?: string;
     changesNotSentForReview?: boolean;
+    existingEditId?: string;
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
@@ -51,14 +51,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
     } else {
         // Create a new Edit
         core.info(`Creating a new Edit for this release`)
-        const appEdit = await androidPublisher.edits.insert({
+        const appEditId = options.existingEditId || (await androidPublisher.edits.insert({
             auth: options.auth,
             packageName: options.applicationId
-        });
+        })).data.id
 
         // Validate the given track
         core.info(`Validating track '${options.track}'`)
-        await validateSelectedTrack(appEdit.data.id!, options).catch(reason => {
+        await validateSelectedTrack(appEditId!, options).catch(reason => {
             core.setFailed(reason);
             return Promise.reject(reason);
         });
@@ -67,7 +67,7 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         const versionCodes = new Array<number>();
         for (const releaseFile of releaseFiles) {
             core.info(`Uploading ${releaseFile}`);
-            const versionCode = await uploadRelease(appEdit.data.id!, options, releaseFile).catch(reason => {
+            const versionCode = await uploadRelease(appEditId!, options, releaseFile).catch(reason => {
                 core.setFailed(reason);
                 return Promise.reject(reason);
             });
@@ -77,14 +77,14 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
 
         // Add the uploaded artifacts to the Edit track
         core.info(`Adding ${versionCodes.length} artifacts to release on '${options.track}' track`)
-        const track = await addReleasesToTrack(appEdit.data.id!, options, versionCodes);
+        const track = await addReleasesToTrack(appEditId!, options, versionCodes);
         core.debug(`Track: ${track}`);
 
         // Commit the pending Edit
         core.info(`Committing the Edit`)
         const res = await androidPublisher.edits.commit({
             auth: options.auth,
-            editId: appEdit.data.id!,
+            editId: appEditId!,
             packageName: options.applicationId,
             changesNotSentForReview: options.changesNotSentForReview
         });
