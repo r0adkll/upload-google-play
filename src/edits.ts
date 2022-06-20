@@ -120,11 +120,11 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
 
 async function uploadRelease(appEdit: AppEdit, options: EditOptions, releaseFile: string): Promise<number | undefined | null> {
     if (releaseFile.endsWith('.apk')) {
-        const apk = await uploadApk(appEdit, options, releaseFile);
+        const apk = await uploadApk(appEdit.id!, options, releaseFile);
         await uploadMappingFile(appEdit.id!, apk.versionCode!, options);
         return Promise.resolve(apk.versionCode);
     } else if (releaseFile.endsWith('.aab')) {
-        const bundle = await uploadBundle(appEdit, options, releaseFile);
+        const bundle = await uploadBundle(appEdit.id!, options, releaseFile);
         await uploadMappingFile(appEdit.id!, bundle.versionCode!, options);
         return Promise.resolve(bundle.versionCode);
     } else {
@@ -229,13 +229,13 @@ async function internalSharingUploadBundle(options: EditOptions, bundleReleaseFi
     return res.data;
 }
 
-async function uploadApk(appEdit: AppEdit, options: EditOptions, apkReleaseFile: string): Promise<Apk> {
-    core.debug(`[${appEdit.id}, packageName=${options.applicationId}]: Uploading APK @ ${apkReleaseFile}`);
+async function uploadApk(appEditId: string, options: EditOptions, apkReleaseFile: string): Promise<Apk> {
+    core.debug(`[${appEditId}, packageName=${options.applicationId}]: Uploading APK @ ${apkReleaseFile}`);
 
     const res = await androidPublisher.edits.apks.upload({
         auth: options.auth,
         packageName: options.applicationId,
-        editId: appEdit.id!,
+        editId: appEditId,
         media: {
             mimeType: 'application/vnd.android.package-archive',
             body: fs.createReadStream(apkReleaseFile)
@@ -245,12 +245,12 @@ async function uploadApk(appEdit: AppEdit, options: EditOptions, apkReleaseFile:
     return res.data
 }
 
-async function uploadBundle(appEdit: AppEdit, options: EditOptions, bundleReleaseFile: string): Promise<Bundle> {
-    core.debug(`[${appEdit.id}, packageName=${options.applicationId}]: Uploading App Bundle @ ${bundleReleaseFile}`);
+async function uploadBundle(appEditId: string, options: EditOptions, bundleReleaseFile: string): Promise<Bundle> {
+    core.debug(`[${appEditId}, packageName=${options.applicationId}]: Uploading App Bundle @ ${bundleReleaseFile}`);
     const res = await androidPublisher.edits.bundles.upload({
         auth: options.auth,
         packageName: options.applicationId,
-        editId: appEdit.id!,
+        editId: appEditId,
         media: {
             mimeType: 'application/octet-stream',
             body: fs.createReadStream(bundleReleaseFile)
