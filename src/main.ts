@@ -20,7 +20,7 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = core.getInput('userFraction', { required: false });
+        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
         const status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
@@ -52,14 +52,9 @@ async function run() {
         }
 
         // Validate user fraction as a number, and within [0.0, 1.0]
-        let userFractionFloat: number | undefined = parseFloat(userFraction);
-        if (!isNaN(userFractionFloat)) {
-            if (userFractionFloat <= 0.0 || userFractionFloat >= 1.0) {
-                core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
-                return;
-            }
-        } else {
-            userFractionFloat = undefined;
+        if (userFraction <= 0.0 || userFraction > 1.0) {
+            core.setFailed('A provided userFraction must be between 0.0 and 1.0, exclusive-inclusive');
+            return;
         }
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
@@ -118,7 +113,7 @@ async function run() {
             applicationId: packageName,
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: userFractionFloat,
+            userFraction: userFraction,
             status: status,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
