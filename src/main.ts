@@ -20,12 +20,13 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
+        const userFraction = parseFloat(core.getInput('userFraction', { required: false }));
         const status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
-        const existingEditId = core.getInput('existingEditId')
+        const existingEditId = core.getInput('existingEditId');
+        var isDraft = core.getInput('isDraft') == 'true';
 
         // Validate that we have a service account json in some format
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
@@ -94,6 +95,9 @@ async function run() {
 
         if (status != undefined) {
             core.warning(`WARNING!! 'status' is deprecated and will be removed in a future release. Status is inferred from given parameters, and will be ignored`);
+            if (status == 'draft') {
+                isDraft = true;
+            }
         }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
@@ -119,7 +123,7 @@ async function run() {
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
             existingEditId: existingEditId,
-            isDraft: false
+            isDraft: isDraft
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
