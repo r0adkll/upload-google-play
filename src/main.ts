@@ -110,6 +110,10 @@ async function run() {
             return
         }
 
+        if (isDraft && userFraction < 1.0) {
+            core.warning("userFraction is ignored on draft releases!")
+        }
+
         const authClient = await auth.getClient();
 
         const result = await uploadToPlayStore({
