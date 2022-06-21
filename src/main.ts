@@ -118,7 +118,8 @@ async function run() {
             mappingFile: mappingFile,
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
-            existingEditId: existingEditId
+            existingEditId: existingEditId,
+            isDraft: false
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
