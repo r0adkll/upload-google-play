@@ -13,7 +13,6 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | releaseName | The release name. Not required to be unique. Default is configured by Google Play Console | A user-friendly update name, e.g. `v1.0.0` | false |
 | inAppUpdatePriority | In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Defaults to `0` | `[0-5]`, where `5` is the highest priority | false |
 | userFraction | Percentage of users who should get the staged version of the app. If this is less than `1.0`, release status will be `inProgress`. Defaults to `1.0` | `(0.0-1.0]` | true |
-| status | Release status. This can be set to `draft` to complete the release at some other time. Defaults to `completed` if targeting 100% rollout, else `inProgress` | One of `completed`, `inProgress`, `halted`, `draft` | false |
 | whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
 | mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
 | changesNotSentForReview | Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Defaults to `false` | `true` or `false` | `false` |
@@ -21,6 +20,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | existingEditId | The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit | A valid, unpublished Edit ID | false |
 | isDraft | Whether the target track is a draft. If this is enabled, userFraction is ignored | `true` or `false` | true |
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
+| ~~status~~ | Please switch to using `userFraction` and `isDraft` directly, status will be inferred | One of `completed`, `inProgress`, `halted`, `draft` | false |
 
 ## Outputs
 
