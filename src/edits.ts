@@ -126,12 +126,12 @@ async function uploadRelease(appEditId: string, options: EditOptions, releaseFil
     if (releaseFile.endsWith('.apk')) {
         const apk = await uploadApk(appEditId, options, releaseFile);
         await uploadMappingFile(appEditId, apk.versionCode!, options);
-		await uploadDebugSymbolsFile(appEditId, apk.versionCode!, options);
+        await uploadDebugSymbolsFile(appEditId, apk.versionCode!, options);
         return Promise.resolve(apk.versionCode);
     } else if (releaseFile.endsWith('.aab')) {
         const bundle = await uploadBundle(appEditId, options, releaseFile);
         await uploadMappingFile(appEditId, bundle.versionCode!, options);
-		await uploadDebugSymbolsFile(appEditId, bundle.versionCode!, options);
+        await uploadDebugSymbolsFile(appEditId, bundle.versionCode!, options);
         return Promise.resolve(bundle.versionCode);
     } else {
         return Promise.reject(`${releaseFile} is invalid`);
@@ -206,33 +206,33 @@ async function uploadMappingFile(appEditId: string, versionCode: number, options
 }
 
 async function uploadDebugSymbolsFile(appEditId: string, versionCode: number, options: EditOptions) {
-	if (options.debugSymbols != undefined && options.debugSymbols.length > 0) {
-		const fileStat = lstatSync(options.debugSymbols);
+    if (options.debugSymbols != undefined && options.debugSymbols.length > 0) {
+        const fileStat = lstatSync(options.debugSymbols);
 
-		var data: Buffer | null = null;
-		if (fileStat.isDirectory()) {
-			data = await createDebugSymbolZipFile(options.debugSymbols);
-		}
+        var data: Buffer | null = null;
+        if (fileStat.isDirectory()) {
+            data = await createDebugSymbolZipFile(options.debugSymbols);
+        }
 
-		if (data == null) {
-			data = readFileSync(options.debugSymbols);
-		}
+        if (data == null) {
+            data = readFileSync(options.debugSymbols);
+        }
 
-		if (data != null) {
-			core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Debug Symbols file @ ${options.debugSymbols}`);
-			const res = await androidPublisher.edits.deobfuscationfiles.upload({
-				auth: options.auth,
-				packageName: options.applicationId,
-				editId: appEditId,
-				apkVersionCode: versionCode,
-				deobfuscationFileType: 'nativeCode',
-				media: {
-					mimeType: 'application/octet-stream',
-					body: Readable.from(data)
-				}
-			})
-		}
-	}
+        if (data != null) {
+            core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Debug Symbols file @ ${options.debugSymbols}`);
+            const res = await androidPublisher.edits.deobfuscationfiles.upload({
+                auth: options.auth,
+                packageName: options.applicationId,
+                editId: appEditId,
+                apkVersionCode: versionCode,
+                deobfuscationFileType: 'nativeCode',
+                media: {
+                    mimeType: 'application/octet-stream',
+                    body: Readable.from(data)
+                }
+            })
+        }
+    }
 }
 
 async function createDebugSymbolZipFile(debugSymbolsPath: string) {
