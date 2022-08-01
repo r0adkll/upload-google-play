@@ -140,7 +140,9 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
     });
     const allTracks = res.data.tracks;
     if (allTracks == undefined || allTracks.find(value => value.track == options.track) == undefined) {
-        return Promise.reject(`Track "${options.track}" could not be found `);
+        const allTrackNames = allTracks?.map((track) => { return track.track });
+
+        return Promise.reject(`Track "${options.track}" could not be found. Available tracks are: ${allTrackNames} `);
     }
 }
 
