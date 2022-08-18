@@ -20,7 +20,7 @@
   "author": "r0adkll",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.9.0",
+    "@actions/core": "^1.9.1",
     "@googleapis/androidpublisher": "^3.0.0",
     "fast-glob": "^3.2.5"
   },
