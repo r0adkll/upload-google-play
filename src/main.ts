@@ -20,13 +20,13 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = core.getInput('userFraction', { required: false });
-        const status = core.getInput('status', { required: false });
+        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
+        var status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const debugSymbols = core.getInput('debugSymbols', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
-        const existingEditId = core.getInput('existingEditId')
+        const existingEditId = core.getInput('existingEditId');
 
         // Validate that we have a service account json in some format
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
@@ -53,14 +53,9 @@ async function run() {
         }
 
         // Validate user fraction as a number, and within [0.0, 1.0]
-        let userFractionFloat: number | undefined = parseFloat(userFraction);
-        if (!isNaN(userFractionFloat)) {
-            if (userFractionFloat <= 0.0 || userFractionFloat >= 1.0) {
-                core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
-                return;
-            }
-        } else {
-            userFractionFloat = undefined;
+        if (userFraction < 0.0 || userFraction > 1.0) {
+            core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
+            return;
         }
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
@@ -98,6 +93,12 @@ async function run() {
             validatedReleaseFiles = files;
         }
 
+        if (status != undefined) {
+            if (!validateStatus(status, userFraction)) return
+        } else {
+            status = inferStatus(userFraction)
+        }
+
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
             return
@@ -120,14 +121,14 @@ async function run() {
             applicationId: packageName,
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: userFractionFloat,
-            status: status,
+            userFraction: userFraction,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             debugSymbols: debugSymbols,
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
-            existingEditId: existingEditId
+            existingEditId: existingEditId,
+            status: status
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
@@ -140,6 +141,37 @@ async function run() {
             fs.unlinkSync('./serviceAccountJson.json');
         }
     }
+}
+
+function inferStatus(userFraction: number): string {
+    let status: string
+    if (userFraction >= 1.0) {
+        status = 'completed'
+    } else if (userFraction > 0) {
+        status = 'inProgress'
+    } else {
+        status = 'halted'
+    }
+    core.info("Inferred status to be " + status)
+    return status
+}
+
+function validateStatus(status: string, userFraction: number): boolean {
+    switch (status) {
+        case 'completed':
+            if (userFraction < 1.0) {
+                core.setFailed("Status 'completed' requires 'userFraction' 1.0")
+                return false
+            }
+            break
+        case 'inProgress':
+            if (userFraction >= 1.0 && userFraction <= 0) {
+                core.setFailed("Status 'inProgress' requires 'userFraction' between 0.0 and 1.0")
+                return false
+            }
+            break
+    }
+    return true
 }
 
 run();
