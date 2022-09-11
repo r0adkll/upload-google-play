@@ -235,30 +235,31 @@ async function uploadDebugSymbolsFile(appEditId: string, versionCode: number, op
     }
 }
 
+async function zipFileAddDirectory(root: JSZip | null, dirPath: string, rootPath: string, isRootRoot: boolean) {
+	if (root == null) return root;
+
+	const newRootPath = path.join(rootPath, dirPath);
+	const fileStat = lstatSync(newRootPath);
+
+	if (!fileStat.isDirectory()) {
+		const data = readFileSync(newRootPath);
+		root.file(dirPath, data);
+		return root;
+	}
+
+	const dir = fs.readdirSync(newRootPath);
+	const zipFolder = isRootRoot ? root : root.folder(dirPath);
+	for (var pathIndex = 0; pathIndex < dir.length; pathIndex++) {
+		const underPath = dir[pathIndex];
+		await zipFileAddDirectory(zipFolder, underPath, newRootPath, false);
+	}
+
+	return root;
+}
+
 async function createDebugSymbolZipFile(debugSymbolsPath: string) {
-    async function addDirectory(root: JSZip | null, dirPath: string, rootPath: string, isRootRoot: boolean) {
-        if (root == null) return root;
-
-        const newRootPath = path.join(rootPath, dirPath);
-        const fileStat = lstatSync(newRootPath);
-
-		if (!fileStat.isDirectory()) {
-            const data = readFileSync(newRootPath);
-            root.file(dirPath, data);
-            return root;
-        }
-
-        const dir = fs.readdirSync(newRootPath);
-        const zipFolder = isRootRoot ? root : root.folder(dirPath);
-        for (var pathIndex = 0; pathIndex < dir.length; pathIndex++) {
-            const underPath = dir[pathIndex];
-            await addDirectory(zipFolder, underPath, newRootPath, false);
-        }
-
-        return root;
-    }
     const zipFile = JSZip();
-    await addDirectory(zipFile, ".", debugSymbolsPath, true);
+    await zipFileAddDirectory(zipFile, ".", debugSymbolsPath, true);
 
     return zipFile.generateAsync({ type: "nodebuffer" });
 }
