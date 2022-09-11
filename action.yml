@@ -36,7 +36,7 @@ inputs:
     required: true
     default: 1.0
   status:
-    description: "DEPRECATED Release status. This can be set to 'draft' to complete the release at some other time."
+    description: "Release status. This can be set to 'draft' to complete the release at some other time."
     required: false
   whatsNewDirectory:
     description: "The directory of localized whats new files"
