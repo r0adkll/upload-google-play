@@ -51,10 +51,6 @@ inputs:
   existingEditId:
     description: "The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit"
     required: false
-  isDraft:
-    description: "Whether the target track is a draft. If this is enabled, userFraction is ignored"
-    required: true
-    default: false
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"

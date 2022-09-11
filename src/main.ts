@@ -20,13 +20,12 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = parseFloat(core.getInput('userFraction', { required: false }));
-        const status = core.getInput('status', { required: false });
+        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
+        var status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
         const existingEditId = core.getInput('existingEditId');
-        var isDraft = core.getInput('isDraft') == 'true';
 
         // Validate that we have a service account json in some format
         if (!serviceAccountJson && !serviceAccountJsonRaw) {
@@ -94,10 +93,9 @@ async function run() {
         }
 
         if (status != undefined) {
-            core.warning(`WARNING!! 'status' is deprecated and will be removed in a future release. Status is inferred from given parameters, and will be ignored`);
-            if (status == 'draft') {
-                isDraft = true;
-            }
+            if (!validateStatus(status, userFraction)) return
+        } else {
+            status = inferStatus(userFraction)
         }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
@@ -108,10 +106,6 @@ async function run() {
         if (mappingFile != undefined && mappingFile.length > 0 && !fs.existsSync(mappingFile)) {
             core.setFailed(`Unable to find 'mappingFile' @ ${mappingFile}`);
             return
-        }
-
-        if (isDraft && userFraction < 1.0) {
-            core.warning("userFraction is ignored on draft releases!")
         }
 
         const authClient = await auth.getClient();
@@ -127,7 +121,7 @@ async function run() {
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
             existingEditId: existingEditId,
-            isDraft: isDraft
+            status: status
         }, validatedReleaseFiles);
 
         console.log(`Finished uploading to the Play Store: ${result}`)
@@ -140,6 +134,37 @@ async function run() {
             fs.unlinkSync('./serviceAccountJson.json');
         }
     }
+}
+
+function inferStatus(userFraction: number): string {
+    let status: string
+    if (userFraction >= 1.0) {
+        status = 'completed'
+    } else if (userFraction > 0) {
+        status = 'inProgress'
+    } else {
+        status = 'halted'
+    }
+    core.info("Inferred status to be " + status)
+    return status
+}
+
+function validateStatus(status: string, userFraction: number): boolean {
+    switch (status) {
+        case 'completed':
+            if (userFraction < 1.0) {
+                core.setFailed("Status 'completed' requires 'userFraction' 1.0")
+                return false
+            }
+            break
+        case 'inProgress':
+            if (userFraction >= 1.0 && userFraction <= 0) {
+                core.setFailed("Status 'inProgress' requires 'userFraction' between 0.0 and 1.0")
+                return false
+            }
+            break
+    }
+    return true
 }
 
 run();

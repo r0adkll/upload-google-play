@@ -27,7 +27,7 @@ export interface EditOptions {
     name?: string;
     changesNotSentForReview?: boolean;
     existingEditId?: string;
-    isDraft: boolean;
+    status: string;
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
@@ -145,14 +145,7 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
 }
 
 async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
-    let status: string;
-    if (options.isDraft) {
-        status = 'draft';
-    } else if (options.userFraction < 1.0) {
-        status = 'inProgress';
-    } else {
-        status = 'completed';
-    }
+    const status = options.status
 
     core.debug(`Creating Track Release for Edit(${appEditId}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
