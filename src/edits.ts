@@ -30,7 +30,7 @@ export interface EditOptions {
     existingEditId?: string;
 }
 
-export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
+export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | void> {
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
@@ -65,9 +65,9 @@ export async function uploadToPlayStore(options: EditOptions, releaseFiles: stri
         });
 
         // Simple check to see whether commit was successful
-        if (res.data.id != null) {
+        if (res.data.id) {
             core.info(`Successfully committed ${res.data.id}`);
-            return Promise.resolve(res.data.id);
+            return res.data.id
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);
             return Promise.reject(res.status);
