@@ -52,8 +52,8 @@ async function run() {
         }
 
         // Validate user fraction as a number, and within [0.0, 1.0]
-        if (userFraction <= 0.0 || userFraction > 1.0) {
-            core.setFailed('A provided userFraction must be between 0.0 and 1.0, exclusive-inclusive');
+        if (userFraction < 0.0 || userFraction > 1.0) {
+            core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
             return;
         }
 
