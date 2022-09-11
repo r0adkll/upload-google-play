@@ -1,9 +1,9 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
 import * as path from "path";
-import {readFileSync} from "fs";
 import {androidpublisher_v3} from "@googleapis/androidpublisher";
 import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
+import { readFile } from 'fs/promises';
 
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
     core.debug(`Executing readLocalizedReleaseNotes`);
@@ -12,16 +12,16 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
             .filter(value => /whatsnew-((.*-.*)|(.*))\b/.test(value));
         const pattern = /whatsnew-(?<local>(.*-.*)|(.*))/;
 
-        let localizedReleaseNotes: LocalizedText[] = [];
+        const localizedReleaseNotes: LocalizedText[] = [];
 
-        core.debug(`Found files: ${releaseNotes}`);
-        releaseNotes.forEach(value => {
+        core.debug(`Found files: ${releaseNotes.toString()}`);
+        for (const value of releaseNotes) {
             const matches = value.match(pattern);
-            core.debug(`Matches for ${value} = ${matches}`);
-            if (matches != undefined && matches.length == 4) {
+            if (matches != null && matches.length == 4) {
+                core.debug(`Matches for ${value} = ${matches.toString()}`);
                 const lang = matches[1];
                 const filePath = path.join(whatsNewDir, value);
-                const content = readFileSync(filePath, 'utf-8');
+                const content = await readFile(filePath, 'utf-8');
 
                 if (content != undefined) {
                     core.debug(`Found localized 'whatsnew-*-*' for Lang(${lang})`);
@@ -33,7 +33,7 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
                     )
                 }
             }
-        });
+        }
 
         return localizedReleaseNotes
     }
