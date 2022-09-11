@@ -25,9 +25,9 @@ export interface EditOptions {
     whatsNewDir?: string;
     mappingFile?: string;
     name?: string;
+    status: string;
     changesNotSentForReview?: boolean;
     existingEditId?: string;
-    status: string;
 }
 
 export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | undefined> {
