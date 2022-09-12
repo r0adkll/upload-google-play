@@ -146,8 +146,13 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
 
 async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
     const status = options.status
+    let userFraction: number | undefined = undefined
 
-    core.debug(`Creating Track Release for Edit(${appEditId}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
+    if (options.status != 'draft') {
+        userFraction = options.userFraction
+    }
+
+    core.debug(`Creating Track Release for Edit(${appEditId}) for Track(${options.track}) with a UserFraction(${userFraction}), Status(${status}), and VersionCodes(${versionCodes})`);
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,
@@ -159,7 +164,7 @@ async function addReleasesToTrack(appEditId: string, options: EditOptions, versi
                 releases: [
                     {
                         name: options.name,
-                        userFraction: options.userFraction,
+                        userFraction: userFraction,
                         status: status,
                         inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
