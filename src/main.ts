@@ -3,6 +3,7 @@ import * as fs from "fs";
 import fg from "fast-glob";
 import {uploadToPlayStore} from "./edits";
 import * as google from '@googleapis/androidpublisher';
+import { unlink } from 'fs/promises';
 
 const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -21,7 +22,7 @@ async function run() {
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
-        var status = core.getInput('status', { required: false });
+        let status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const debugSymbols = core.getInput('debugSymbols', { required: false });
@@ -131,14 +132,20 @@ async function run() {
             status: status
         }, validatedReleaseFiles);
 
-        console.log(`Finished uploading to the Play Store: ${result}`)
-    } catch (error: any) {
-        core.setFailed(error.message)
+        if (result) {
+            console.log(`Finished uploading to the Play Store: ${result}`)
+        }
+    } catch (error: unknown) {
+        if (error instanceof Error) {
+            core.setFailed(error.message)
+        } else {
+            core.setFailed('Unknown error occurred.')
+        }
     } finally {
         if (core.getInput('serviceAccountJsonPlainText', { required: false})) {
             // Cleanup our auth file that we created.
             core.debug('Cleaning up service account json file');
-            fs.unlinkSync('./serviceAccountJson.json');
+            await unlink('./serviceAccountJson.json');
         }
     }
 }
@@ -174,4 +181,4 @@ function validateStatus(status: string, userFraction: number): boolean {
     return true
 }
 
-run();
+void run();
