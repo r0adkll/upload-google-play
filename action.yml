@@ -44,6 +44,9 @@ inputs:
   mappingFile:
     description: "The mapping.txt file used to de-obfuscate your stack traces from crash reports"
     required: false
+  debugSymbols:
+    description: "The native-debug-symbols.zip file or folder that contains your debug symbols"
+    required: false
   changesNotSentForReview:
     description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console"
     default: false

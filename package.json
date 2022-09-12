@@ -22,7 +22,8 @@
   "dependencies": {
     "@actions/core": "^1.9.1",
     "@googleapis/androidpublisher": "^3.0.0",
-    "fast-glob": "^3.2.12"
+    "fast-glob": "^3.2.12",
+    "jszip": "^3.10.0"
   },
   "devDependencies": {
     "@types/jest": "^29.0.0",

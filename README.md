@@ -16,6 +16,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | status | Release status. Defaults to `completed` if targeting 100% rollout, `halted` for 0%, and `inProgress` for anything in between | One of `completed`, `inProgress`, `halted`, `draft` | false |
 | whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
 | mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
+| debugSymbols | The native-debug-symbols.zip file or folder that contains your debug symbols | A path to a valid `native-debug-symbols.zip file` file or a folder | false |
 | changesNotSentForReview | Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Defaults to `false` | `true` or `false` | `false` |
 | serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | true (or serviceAccountJsonPlainText) |
 | existingEditId | The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit | A valid, unpublished Edit ID | false |
@@ -44,6 +45,7 @@ with:
   userFraction: 0.33
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
+  debugSymbols: app/intermediates/merged_native_libs/release/out/lib
 ```
 
 The `whatsNewDirectory` in this example supplies changelogs for English, German and Japanese

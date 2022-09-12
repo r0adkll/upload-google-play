@@ -1,6 +1,9 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
-import { readFileSync } from "fs";
+import { readFileSync, lstatSync } from "fs";
+import JSZip from 'jszip';
+import path = require('path');
+import { Readable } from 'stream';
 
 import * as google from '@googleapis/androidpublisher';
 import { androidpublisher_v3 } from "@googleapis/androidpublisher";
@@ -24,6 +27,7 @@ export interface EditOptions {
     userFraction: number;
     whatsNewDir?: string;
     mappingFile?: string;
+    debugSymbols?: string;
     name?: string;
     status: string;
     changesNotSentForReview?: boolean;
@@ -86,7 +90,6 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
     }
     
     if (!res.downloadUrl) throw Error('Uploaded file has no download URL.')
-
     core.setOutput("internalSharingDownloadUrl", res.downloadUrl);
     core.exportVariable("INTERNAL_SHARING_DOWNLOAD_URL", res.downloadUrl);
     console.log(`${releaseFile} uploaded to Internal Sharing, download it with ${res.downloadUrl}`)
@@ -121,8 +124,21 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
 
 async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
     const status = options.status
+    let userFraction: number | undefined = undefined
 
-    core.debug(`Creating Track Release for Edit(${appEditId}) for Track(${options.track}) with a UserFraction(${options.userFraction}), Status(${status}), and VersionCodes(${versionCodes.toString()})`);
+    if (options.status != 'draft') {
+        userFraction = options.userFraction
+    }
+
+    core.debug(`Creating release for:`);
+    core.debug(`edit=${appEditId}`)
+    core.debug(`track=${options.track}`)
+    if (userFraction) {
+        core.debug(`userFraction=${userFraction}`)
+    }
+    core.debug(`status=${status}`)
+    core.debug(`versionCodes=${versionCodes.toString()}`)
+
     const res = await androidPublisher.edits.tracks
         .update({
             auth: options.auth,
@@ -134,7 +150,7 @@ async function addReleasesToTrack(appEditId: string, options: EditOptions, versi
                 releases: [
                     {
                         name: options.name,
-                        userFraction: options.userFraction,
+                        userFraction: userFraction,
                         status: status,
                         inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
@@ -165,6 +181,65 @@ async function uploadMappingFile(appEditId: string, versionCode: number, options
             })
         }
     }
+}
+
+async function uploadDebugSymbolsFile(appEditId: string, versionCode: number, options: EditOptions) {
+    if (options.debugSymbols != undefined && options.debugSymbols.length > 0) {
+        const fileStat = lstatSync(options.debugSymbols);
+
+        let data: Buffer | null = null;
+        if (fileStat.isDirectory()) {
+            data = await createDebugSymbolZipFile(options.debugSymbols);
+        }
+
+        if (data == null) {
+            data = readFileSync(options.debugSymbols);
+        }
+
+        if (data != null) {
+            core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Debug Symbols file @ ${options.debugSymbols}`);
+            await androidPublisher.edits.deobfuscationfiles.upload({
+                auth: options.auth,
+                packageName: options.applicationId,
+                editId: appEditId,
+                apkVersionCode: versionCode,
+                deobfuscationFileType: 'nativeCode',
+                media: {
+                    mimeType: 'application/octet-stream',
+                    body: Readable.from(data)
+                }
+            })
+        }
+    }
+}
+
+async function zipFileAddDirectory(root: JSZip | null, dirPath: string, rootPath: string, isRootRoot: boolean) {
+	if (root == null) return root;
+
+	const newRootPath = path.join(rootPath, dirPath);
+	const fileStat = lstatSync(newRootPath);
+
+	if (!fileStat.isDirectory()) {
+		const data = readFileSync(newRootPath);
+		root.file(dirPath, data);
+		return root;
+	}
+
+	const dir = fs.readdirSync(newRootPath);
+	const zipFolder = isRootRoot ? root : root.folder(dirPath);
+	for (let pathIndex = 0; pathIndex < dir.length; pathIndex++) {
+		const underPath = dir[pathIndex];
+		await zipFileAddDirectory(zipFolder, underPath, newRootPath, false);
+	}
+
+	return root;
+}
+
+async function createDebugSymbolZipFile(debugSymbolsPath: string) {
+    const zipFile = JSZip();
+    await zipFileAddDirectory(zipFile, ".", debugSymbolsPath, true);
+
+    return zipFile.generateAsync({ type: "nodebuffer" });
 }
 
 async function internalSharingUploadApk(options: EditOptions, apkReleaseFile: string): Promise<InternalAppSharingArtifact> {
@@ -277,7 +352,8 @@ async function uploadReleaseFiles(appEditId: string, options: EditOptions, relea
         }
 
         // Upload version code
-        await uploadMappingFile(appEditId, versionCode, options);
+        await uploadMappingFile(appEditId, versionCode, options)
+        await uploadDebugSymbolsFile(appEditId, versionCode, options)
         versionCodes.push(versionCode)
     }
 

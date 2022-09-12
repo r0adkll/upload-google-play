@@ -25,6 +25,7 @@ async function run() {
         let status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
+        const debugSymbols = core.getInput('debugSymbols', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
         const existingEditId = core.getInput('existingEditId');
 
@@ -109,6 +110,11 @@ async function run() {
             return
         }
 
+        if (debugSymbols != undefined && debugSymbols.length > 0 && !fs.existsSync(debugSymbols)) {
+            core.setFailed(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
+            return
+        }
+
         const authClient = await auth.getClient();
 
         const result = await uploadToPlayStore({
@@ -119,6 +125,7 @@ async function run() {
             userFraction: userFraction,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
+            debugSymbols: debugSymbols,
             name: releaseName,
             changesNotSentForReview: changesNotSentForReview,
             existingEditId: existingEditId,
