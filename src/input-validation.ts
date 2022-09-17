@@ -1,7 +1,5 @@
 import * as core from '@actions/core';
-import { R_OK } from 'constants';
 import fg from "fast-glob";
-import { access } from 'fs/promises';
 
 export function validateUserFractionAndStatus(userFraction: number | undefined, status: string | undefined): string | undefined {
     if (!userFraction && !status) {
@@ -52,19 +50,12 @@ export function validateInAppUpdatePriority(inAppUpdatePriority: number | undefi
 
 export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string | undefined> {
     if (!releaseFiles) {
-        return `You must provide either 'releaseFile' or 'releaseFiles' in your configuration`
+        return `You must provide 'releaseFiles' in your configuration`
     } else {
         const files = await fg(releaseFiles)
         if (!files.length) {
             return `Unable to find any release file matching ${releaseFiles.join(',')}`
         }
         core.debug(`Found the following release files:\n${releaseFiles.join('\n')}`)
-    }
-    for (const releaseFile of releaseFiles) {
-        try {
-            await access(releaseFile, R_OK)
-        } catch {
-            return `Unable to find release file @ ${releaseFile}`
-        }
     }
 }
