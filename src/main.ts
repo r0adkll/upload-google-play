@@ -3,7 +3,8 @@ import * as fs from "fs";
 import fg from "fast-glob";
 import {uploadToPlayStore} from "./edits";
 import * as google from '@googleapis/androidpublisher';
-import { unlink } from 'fs/promises';
+import { unlink, writeFile } from 'fs/promises';
+import { exit } from 'process';
 
 const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -21,43 +22,17 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
-        let status = core.getInput('status', { required: false });
+        const userFraction = core.getInput('userFraction', { required: false })
+        const status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const debugSymbols = core.getInput('debugSymbols', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
         const existingEditId = core.getInput('existingEditId');
 
-        // Validate that we have a service account json in some format
-        if (!serviceAccountJson && !serviceAccountJsonRaw) {
-            console.log("No service account json key provided!");
-            core.setFailed("You must provide one of 'serviceAccountJson' or 'serviceAccountJsonPlainText' to use this action");
-            return;
-        }
+        await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
-        // If the user has provided the raw plain text via secrets, or w/e, then write to file and
-        // set appropriate env variable for the auth
-        if (serviceAccountJsonRaw) {
-            const serviceAccountFile = "./serviceAccountJson.json";
-            fs.writeFileSync(serviceAccountFile, serviceAccountJsonRaw, {
-                encoding: 'utf8'
-            });
-
-            // Insure that the api can find our service account credentials
-            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountFile);
-        }
-
-        if (serviceAccountJson) {
-            // Insure that the api can find our service account credentials
-            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson);
-        }
-
-        // Validate user fraction as a number, and within [0.0, 1.0]
-        if (userFraction < 0.0 || userFraction > 1.0) {
-            core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
-            return;
-        }
+        validateUserFractionAndStatus(userFraction, status)
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
         let inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
@@ -94,12 +69,6 @@ async function run() {
             validatedReleaseFiles = files;
         }
 
-        if (status != undefined) {
-            if (!validateStatus(status, userFraction)) return
-        } else {
-            status = inferStatus(userFraction)
-        }
-
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
             return
@@ -122,7 +91,7 @@ async function run() {
             applicationId: packageName,
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: userFraction,
+            userFraction: parseFloat(userFraction),
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             debugSymbols: debugSymbols,
@@ -150,35 +119,73 @@ async function run() {
     }
 }
 
-function inferStatus(userFraction: number): string {
-    let status: string
-    if (userFraction >= 1.0) {
-        status = 'completed'
-    } else if (userFraction > 0) {
-        status = 'inProgress'
-    } else {
-        status = 'halted'
+async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined) {
+    if (serviceAccountJson && serviceAccountJsonRaw) {
+        // If the user provided both, print a warning one will be ignored
+        core.warning('Both \'serviceAccountJsonPlainText\' and \'serviceAccountJson\' were provided! \'serviceAccountJson\' will be ignored.')
     }
-    core.info("Inferred status to be " + status)
-    return status
+    
+    if (serviceAccountJsonRaw) {
+        // If the user has provided the raw plain text, then write to file and set appropriate env variable
+        const serviceAccountFile = "./serviceAccountJson.json";
+        await writeFile(serviceAccountFile, serviceAccountJsonRaw, {
+            encoding: 'utf8'
+        });
+        core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountFile)
+    } else if (serviceAccountJson) {
+        // If the user has provided the json path, then set appropriate env variable
+        core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson)
+    } else {
+        // If the user provided neither, fail and exit
+        core.setFailed("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
+        exit()
+    }
 }
 
-function validateStatus(status: string, userFraction: number): boolean {
-    switch (status) {
-        case 'completed':
-            if (userFraction < 1.0) {
-                core.setFailed("Status 'completed' requires 'userFraction' 1.0")
-                return false
-            }
-            break
-        case 'inProgress':
-            if (userFraction >= 1.0 && userFraction <= 0) {
-                core.setFailed("Status 'inProgress' requires 'userFraction' between 0.0 and 1.0")
-                return false
-            }
-            break
+function validateUserFractionAndStatus(userFraction: string | undefined, status: string | undefined) {
+    if (!userFraction && !status) {
+        core.setFailed(`You must specify one or both of 'userFraction' or 'status'`)
+        exit()
     }
-    return true
+
+    if (userFraction) {
+        // If userFraction was set, perform basic validation
+        const userFractionFloat = parseFloat(userFraction)
+        if (isNaN(userFractionFloat)) {
+            core.setFailed(`'userFraction' must be a number! Got ${userFraction}`)
+            exit()
+        }
+        if (userFractionFloat >= 1 && userFractionFloat <= 0) {
+            core.setFailed(`'userFraction' must be between 0 and 1! Got ${userFractionFloat}`)
+            exit()
+        }
+    }
+
+    if (status) {
+        // If status was set, perform basic validation
+        if (status != 'completed' && status != 'inProgress' && status != 'halted' && status != 'draft') {
+            core.setFailed(`Invalid status provided! Must be one of 'completed', 'inProgress', 'halted', 'draft'. Got ${status}`)
+            exit()
+        }
+
+        // Validate userFraction is correct for the given status
+        switch (status) {
+            case 'completed':
+            case 'draft':
+                if (userFraction) {
+                    core.warning(`Status 'completed' does not support 'userFraction', it will be ignored`)
+                    userFraction = undefined
+                }
+                break
+            case 'halted':
+            case 'inProgress':
+                if (!userFraction) {
+                    core.setFailed(`Status '${status}' requires a 'userFraction' to be set`)
+                    exit()
+                }
+                break
+        }
+    }
 }
 
 void run();
