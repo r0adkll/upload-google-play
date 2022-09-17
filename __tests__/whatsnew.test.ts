@@ -6,7 +6,7 @@ import {androidpublisher_v3} from "@googleapis/androidpublisher";
 import LocalizedText = androidpublisher_v3.Schema$LocalizedText;
 
 test("read localized whatsnew files", async () => {
-    let texts = await readLocalizedReleaseNotes("./__tests__");
+    let texts = await readLocalizedReleaseNotes("./__tests__/whatsnew");
     expect(texts).toHaveLength(6);
     expect(texts).toContainEqual({
         language: "en-US",
