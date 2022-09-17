@@ -2,33 +2,26 @@ import * as core from '@actions/core';
 import { R_OK } from 'constants';
 import fg from "fast-glob";
 import { access } from 'fs/promises';
-import { exit } from 'process';
 
-function failValidation(message: string): void {
-    core.setFailed(message)
-    exit()
-}
-
-export function validateUserFractionAndStatus(userFraction: string | undefined, status: string | undefined): void {
+export function validateUserFractionAndStatus(userFraction: number | undefined, status: string | undefined): string | undefined {
     if (!userFraction && !status) {
-        failValidation(`You must specify one or both of 'userFraction' or 'status'`)
+        return `You must specify one or both of 'userFraction' or 'status'`
     }
 
     if (userFraction) {
         // If userFraction was set, perform basic validation
-        const userFractionFloat = parseFloat(userFraction)
-        if (isNaN(userFractionFloat)) {
-            failValidation(`'userFraction' must be a number! Got ${userFraction}`)
+        if (isNaN(userFraction)) {
+            return `'userFraction' must be a number! Got ${userFraction}`
         }
-        if (userFractionFloat >= 1 && userFractionFloat <= 0) {
-            failValidation(`'userFraction' must be between 0 and 1! Got ${userFractionFloat}`)
+        if (userFraction >= 1 && userFraction <= 0) {
+            return `'userFraction' must be between 0 and 1! Got ${userFraction}`
         }
     }
 
     if (status) {
         // If status was set, perform basic validation
         if (status != 'completed' && status != 'inProgress' && status != 'halted' && status != 'draft') {
-            failValidation(`Invalid status provided! Must be one of 'completed', 'inProgress', 'halted', 'draft'. Got ${status}`)
+            return `Invalid status provided! Must be one of 'completed', 'inProgress', 'halted', 'draft'. Got ${status}`
         }
 
         // Validate userFraction is correct for the given status
@@ -36,43 +29,42 @@ export function validateUserFractionAndStatus(userFraction: string | undefined, 
             case 'completed':
             case 'draft':
                 if (userFraction) {
-                    core.warning(`Status 'completed' does not support 'userFraction', it will be ignored`)
-                    userFraction = undefined
+                    return `Status 'completed' does not support 'userFraction'`
                 }
                 break
             case 'halted':
             case 'inProgress':
                 if (!userFraction) {
-                    failValidation(`Status '${status}' requires a 'userFraction' to be set`)
+                    return `Status '${status}' requires a 'userFraction' to be set`
                 }
                 break
         }
     }
 }
 
-export function validateInAppUpdatePriority(inAppUpdatePriority: number | undefined): void {
+export function validateInAppUpdatePriority(inAppUpdatePriority: number | undefined): string | undefined {
     if (inAppUpdatePriority) {
         if (inAppUpdatePriority < 0 || inAppUpdatePriority > 5) {
-            failValidation('inAppUpdatePriority must be between 0 and 5, inclusive-inclusive')
+            return 'inAppUpdatePriority must be between 0 and 5, inclusive-inclusive'
         }
     }
 }
 
-export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<void> {
+export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string | undefined> {
     if (!releaseFiles) {
-        failValidation(`You must provide either 'releaseFile' or 'releaseFiles' in your configuration`)
+        return `You must provide either 'releaseFile' or 'releaseFiles' in your configuration`
     } else {
         const files = await fg(releaseFiles)
         if (!files.length) {
-            failValidation(`Unable to find any release file matching ${releaseFiles.join(',')}`)
+            return `Unable to find any release file matching ${releaseFiles.join(',')}`
         }
         core.debug(`Found the following release files:\n${releaseFiles.join('\n')}`)
     }
-    for (const releaseFile in releaseFiles) {
+    for (const releaseFile of releaseFiles) {
         try {
             await access(releaseFile, R_OK)
         } catch {
-            failValidation(`Unable to find release file @ ${releaseFile}`)
+            return `Unable to find release file @ ${releaseFile}`
         }
     }
 }

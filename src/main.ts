@@ -32,18 +32,30 @@ async function run() {
 
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
-        void validateUserFractionAndStatus(userFraction, status)
+        const fractionAndStatusError = void validateUserFractionAndStatus(parseFloat(userFraction), status)
+        if (fractionAndStatusError) {
+            core.setFailed(fractionAndStatusError)
+            return
+        }
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
         const inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
-        void validateInAppUpdatePriority(inAppUpdatePriorityInt)
+        const updatePriorityError = validateInAppUpdatePriority(inAppUpdatePriorityInt)
+        if (updatePriorityError) {
+            core.setFailed(updatePriorityError)
+            return
+        }
 
         // Check release files while maintaining backward compatibility
         if (releaseFile) {
             core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
         }
         const validatedReleaseFiles: string[] = releaseFiles ?? [releaseFile];
-        await validateReleaseFiles(validatedReleaseFiles)
+        const releaseFilesError = await validateReleaseFiles(validatedReleaseFiles)
+        if (releaseFilesError) {
+            core.setFailed(releaseFilesError)
+            return
+        }
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
