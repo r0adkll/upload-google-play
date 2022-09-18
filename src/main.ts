@@ -34,37 +34,21 @@ async function run() {
 
         // Validate user fraction
         const userFractionFloat = parseFloat(userFraction)
-        const userFractionError = validateUserFraction(userFractionFloat)
-        if (userFractionError) {
-            core.setFailed(userFractionError)
-            return
-        }
+        await validateUserFraction(userFractionFloat)
 
         // Validate release status
-        const statusError = validateStatus(status, userFraction != undefined)
-        if (statusError) {
-            core.setFailed(statusError)
-            return
-        }
+        await validateStatus(status, userFraction != undefined)
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
         const inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
-        const updatePriorityError = validateInAppUpdatePriority(inAppUpdatePriorityInt)
-        if (updatePriorityError) {
-            core.setFailed(updatePriorityError)
-            return
-        }
+        await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
         // Check release files while maintaining backward compatibility
         if (releaseFile) {
             core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
         }
         const validatedReleaseFiles: string[] = releaseFiles ?? [releaseFile];
-        const releaseFilesError = await validateReleaseFiles(validatedReleaseFiles)
-        if (releaseFilesError) {
-            core.setFailed(releaseFilesError)
-            return
-        }
+        await validateReleaseFiles(validatedReleaseFiles)
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
@@ -121,7 +105,7 @@ async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefi
         // If the user provided both, print a warning one will be ignored
         core.warning('Both \'serviceAccountJsonPlainText\' and \'serviceAccountJson\' were provided! \'serviceAccountJson\' will be ignored.')
     }
-    
+
     if (serviceAccountJsonRaw) {
         // If the user has provided the raw plain text, then write to file and set appropriate env variable
         const serviceAccountFile = "./serviceAccountJson.json";

@@ -1,22 +1,22 @@
 import * as core from '@actions/core';
 import fg from "fast-glob";
 
-export function validateUserFraction(userFraction: number | undefined): string | undefined {
+export async function validateUserFraction(userFraction: number | undefined): Promise<void> {
     if (userFraction != undefined) {
         // If userFraction was set, perform basic validation
         if (isNaN(userFraction)) {
-            return `'userFraction' must be a number! Got ${userFraction}`
+            return Promise.reject(new Error(`'userFraction' must be a number! Got ${userFraction}`))
         }
         if (userFraction >= 1 || userFraction <= 0) {
-            return `'userFraction' must be between 0 and 1! Got ${userFraction}`
+            return Promise.reject(new Error(`'userFraction' must be between 0 and 1! Got ${userFraction}`))
         }
     }
 }
 
-export function validateStatus(status: string | undefined, hasUserFraction: boolean): string | undefined {
+export async function validateStatus(status: string | undefined, hasUserFraction: boolean): Promise<void> {
     // If status was set, perform basic validation
     if (status != 'completed' && status != 'inProgress' && status != 'halted' && status != 'draft') {
-        return `Invalid status provided! Must be one of 'completed', 'inProgress', 'halted', 'draft'. Got ${status ?? "undefined"}`
+        return Promise.reject(new Error(`Invalid status provided! Must be one of 'completed', 'inProgress', 'halted', 'draft'. Got ${status ?? "undefined"}`))
     }
 
     // Validate userFraction is correct for the given status
@@ -24,33 +24,33 @@ export function validateStatus(status: string | undefined, hasUserFraction: bool
         case 'completed':
         case 'draft':
             if (hasUserFraction) {
-                return `Status 'completed' does not support 'userFraction'`
+                return Promise.reject(new Error(`Status 'completed' does not support 'userFraction'`))
             }
             break
         case 'halted':
         case 'inProgress':
             if (!hasUserFraction) {
-                return `Status '${status}' requires a 'userFraction' to be set`
+                return Promise.reject(new Error(`Status '${status}' requires a 'userFraction' to be set`))
             }
             break
     }
 }
 
-export function validateInAppUpdatePriority(inAppUpdatePriority: number | undefined): string | undefined {
+export async function validateInAppUpdatePriority(inAppUpdatePriority: number | undefined): Promise<void> {
     if (inAppUpdatePriority) {
         if (inAppUpdatePriority < 0 || inAppUpdatePriority > 5) {
-            return 'inAppUpdatePriority must be between 0 and 5, inclusive-inclusive'
+            return Promise.reject(new Error('inAppUpdatePriority must be between 0 and 5, inclusive-inclusive'))
         }
     }
 }
 
-export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string | undefined> {
+export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<void> {
     if (!releaseFiles) {
-        return `You must provide 'releaseFiles' in your configuration`
+        return Promise.reject(new Error(`You must provide 'releaseFiles' in your configuration`))
     } else {
         const files = await fg(releaseFiles)
         if (!files.length) {
-            return `Unable to find any release file matching ${releaseFiles.join(',')}`
+            return Promise.reject(new Error(`Unable to find any release file matching ${releaseFiles.join(',')}`))
         }
         core.debug(`Found the following release files:\n${releaseFiles.join('\n')}`)
     }
