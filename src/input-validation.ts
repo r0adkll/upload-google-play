@@ -1,4 +1,3 @@
-import * as core from '@actions/core';
 import fg from "fast-glob";
 
 export async function validateUserFraction(userFraction: number | undefined): Promise<void> {
@@ -44,7 +43,7 @@ export async function validateInAppUpdatePriority(inAppUpdatePriority: number | 
     }
 }
 
-export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<void> {
+export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string[]> {
     if (!releaseFiles) {
         return Promise.reject(new Error(`You must provide 'releaseFiles' in your configuration`))
     } else {
@@ -52,6 +51,6 @@ export async function validateReleaseFiles(releaseFiles: string[] | undefined): 
         if (!files.length) {
             return Promise.reject(new Error(`Unable to find any release file matching ${releaseFiles.join(',')}`))
         }
-        core.debug(`Found the following release files:\n${releaseFiles.join('\n')}`)
+        return files
     }
 }

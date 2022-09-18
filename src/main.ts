@@ -47,8 +47,7 @@ async function run() {
         if (releaseFile) {
             core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
         }
-        const validatedReleaseFiles: string[] = releaseFiles ?? [releaseFile];
-        await validateReleaseFiles(validatedReleaseFiles)
+        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
