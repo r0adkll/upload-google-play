@@ -1,4 +1,4 @@
-import { validateUserFractionAndStatus, validateInAppUpdatePriority, validateReleaseFiles } from "../src/input-validation"
+import { validateInAppUpdatePriority, validateReleaseFiles } from "../src/input-validation"
 
 test("invalid in-app update priority fails validation", () => {
     const testValues = [-1, 6, -1000, 1000]

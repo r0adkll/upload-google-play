@@ -1,7 +1,7 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
 import {uploadToPlayStore} from "./edits";
-import { validateUserFractionAndStatus, validateInAppUpdatePriority, validateReleaseFiles } from "./input-validation"
+import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
 import * as google from '@googleapis/androidpublisher';
 import { unlink, writeFile } from 'fs/promises';
 import { exit } from 'process';
@@ -32,9 +32,18 @@ async function run() {
 
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
-        const fractionAndStatusError = void validateUserFractionAndStatus(parseFloat(userFraction), status)
-        if (fractionAndStatusError) {
-            core.setFailed(fractionAndStatusError)
+        // Validate user fraction
+        const userFractionFloat = parseFloat(userFraction)
+        const userFractionError = validateUserFraction(userFractionFloat)
+        if (userFractionError) {
+            core.setFailed(userFractionError)
+            return
+        }
+
+        // Validate release status
+        const statusError = validateStatus(status, userFraction != undefined)
+        if (statusError) {
+            core.setFailed(statusError)
             return
         }
 
@@ -79,7 +88,7 @@ async function run() {
             applicationId: packageName,
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: parseFloat(userFraction),
+            userFraction: userFractionFloat,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             debugSymbols: debugSymbols,
