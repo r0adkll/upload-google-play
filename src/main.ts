@@ -1,9 +1,10 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
-import fg from "fast-glob";
 import {uploadToPlayStore} from "./edits";
+import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
 import * as google from '@googleapis/androidpublisher';
-import { unlink } from 'fs/promises';
+import { unlink, writeFile } from 'fs/promises';
+import { exit } from 'process';
 
 const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -21,84 +22,32 @@ async function run() {
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-        const userFraction = parseFloat(core.getInput('userFraction', { required: true }));
-        let status = core.getInput('status', { required: false });
+        const userFraction = core.getInput('userFraction', { required: false })
+        const status = core.getInput('status', { required: false });
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const debugSymbols = core.getInput('debugSymbols', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
         const existingEditId = core.getInput('existingEditId');
 
-        // Validate that we have a service account json in some format
-        if (!serviceAccountJson && !serviceAccountJsonRaw) {
-            console.log("No service account json key provided!");
-            core.setFailed("You must provide one of 'serviceAccountJson' or 'serviceAccountJsonPlainText' to use this action");
-            return;
-        }
+        await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
-        // If the user has provided the raw plain text via secrets, or w/e, then write to file and
-        // set appropriate env variable for the auth
-        if (serviceAccountJsonRaw) {
-            const serviceAccountFile = "./serviceAccountJson.json";
-            fs.writeFileSync(serviceAccountFile, serviceAccountJsonRaw, {
-                encoding: 'utf8'
-            });
+        // Validate user fraction
+        const userFractionFloat = parseFloat(userFraction)
+        await validateUserFraction(userFractionFloat)
 
-            // Insure that the api can find our service account credentials
-            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountFile);
-        }
-
-        if (serviceAccountJson) {
-            // Insure that the api can find our service account credentials
-            core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson);
-        }
-
-        // Validate user fraction as a number, and within [0.0, 1.0]
-        if (userFraction < 0.0 || userFraction > 1.0) {
-            core.setFailed('A provided userFraction must be between 0.0 and 1.0, inclusive-inclusive');
-            return;
-        }
+        // Validate release status
+        await validateStatus(status, userFraction != undefined)
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
-        let inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
-        if (!isNaN(inAppUpdatePriorityInt)) {
-            if (inAppUpdatePriorityInt < 0 || inAppUpdatePriorityInt > 5) {
-                core.setFailed('inAppUpdatePriority must be between 0 and 5, inclusive-inclusive');
-                return;
-            }
-        } else {
-            inAppUpdatePriorityInt = undefined;
-        }
+        const inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
+        await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
         // Check release files while maintaining backward compatibility
-        let validatedReleaseFiles: string[] = [];
-        if (releaseFiles.length == 0 && !releaseFile) {
-            core.setFailed(`You must provide either 'releaseFile' or 'releaseFiles' in your configuration.`);
-            return;
-        } else if (releaseFiles.length == 0 && releaseFile) {
-            core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'.`);
-            core.debug(`Validating ${releaseFile} exists`)
-            if (!fs.existsSync(releaseFile)) {
-                core.setFailed(`Unable to find release file @ ${releaseFile}`);
-                return;
-            } else {
-                validatedReleaseFiles = [releaseFile];
-            }
-        } else if (releaseFiles.length > 0) {
-            core.debug(`Finding files ${releaseFiles.join(',')}`)
-            const files = await fg(releaseFiles);
-            if (!files.length) {
-                core.setFailed(`Unable to find any release file @ ${releaseFiles.join(',')}`);
-                return;
-            }
-            validatedReleaseFiles = files;
+        if (releaseFile) {
+            core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
         }
-
-        if (status != undefined) {
-            if (!validateStatus(status, userFraction)) return
-        } else {
-            status = inferStatus(userFraction)
-        }
+        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
@@ -122,7 +71,7 @@ async function run() {
             applicationId: packageName,
             track: track,
             inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: userFraction,
+            userFraction: userFractionFloat,
             whatsNewDir: whatsNewDir,
             mappingFile: mappingFile,
             debugSymbols: debugSymbols,
@@ -150,35 +99,27 @@ async function run() {
     }
 }
 
-function inferStatus(userFraction: number): string {
-    let status: string
-    if (userFraction >= 1.0) {
-        status = 'completed'
-    } else if (userFraction > 0) {
-        status = 'inProgress'
-    } else {
-        status = 'halted'
+async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined) {
+    if (serviceAccountJson && serviceAccountJsonRaw) {
+        // If the user provided both, print a warning one will be ignored
+        core.warning('Both \'serviceAccountJsonPlainText\' and \'serviceAccountJson\' were provided! \'serviceAccountJson\' will be ignored.')
     }
-    core.info("Inferred status to be " + status)
-    return status
-}
 
-function validateStatus(status: string, userFraction: number): boolean {
-    switch (status) {
-        case 'completed':
-            if (userFraction < 1.0) {
-                core.setFailed("Status 'completed' requires 'userFraction' 1.0")
-                return false
-            }
-            break
-        case 'inProgress':
-            if (userFraction >= 1.0 && userFraction <= 0) {
-                core.setFailed("Status 'inProgress' requires 'userFraction' between 0.0 and 1.0")
-                return false
-            }
-            break
+    if (serviceAccountJsonRaw) {
+        // If the user has provided the raw plain text, then write to file and set appropriate env variable
+        const serviceAccountFile = "./serviceAccountJson.json";
+        await writeFile(serviceAccountFile, serviceAccountJsonRaw, {
+            encoding: 'utf8'
+        });
+        core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountFile)
+    } else if (serviceAccountJson) {
+        // If the user has provided the json path, then set appropriate env variable
+        core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson)
+    } else {
+        // If the user provided neither, fail and exit
+        core.setFailed("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
+        exit()
     }
-    return true
 }
 
 void run();
