@@ -33,14 +33,24 @@ async function run() {
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
         // Validate user fraction
-        const userFractionFloat = parseFloat(userFraction)
+        let userFractionFloat: number | undefined
+        if (userFraction) {
+            userFractionFloat = parseFloat(userFraction)
+        } else {
+            userFractionFloat = undefined
+        }
         await validateUserFraction(userFractionFloat)
 
         // Validate release status
         await validateStatus(status, userFraction != undefined)
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
-        const inAppUpdatePriorityInt: number | undefined = parseInt(inAppUpdatePriority);
+        let inAppUpdatePriorityInt: number | undefined
+        if (inAppUpdatePriority) {
+            inAppUpdatePriorityInt = parseInt(inAppUpdatePriority)
+        } else {
+            inAppUpdatePriorityInt = undefined
+        }
         await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
         // Check release files while maintaining backward compatibility
