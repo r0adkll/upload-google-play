@@ -24,7 +24,7 @@ export interface EditOptions {
     applicationId: string;
     track: string;
     inAppUpdatePriority: number;
-    userFraction: number;
+    userFraction?: number;
     whatsNewDir?: string;
     mappingFile?: string;
     debugSymbols?: string;
