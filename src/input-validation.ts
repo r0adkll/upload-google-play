@@ -23,7 +23,7 @@ export async function validateStatus(status: string | undefined, hasUserFraction
         case 'completed':
         case 'draft':
             if (hasUserFraction) {
-                return Promise.reject(new Error(`Status 'completed' does not support 'userFraction'`))
+                return Promise.reject(new Error(`Status '${status}' does not support 'userFraction'`))
             }
             break
         case 'halted':

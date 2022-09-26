@@ -34,7 +34,7 @@ async function run() {
 
         // Validate user fraction
         let userFractionFloat: number | undefined
-        if (userFraction) {
+        if (userFraction != undefined) {
             userFractionFloat = parseFloat(userFraction)
         } else {
             userFractionFloat = undefined
@@ -42,7 +42,7 @@ async function run() {
         await validateUserFraction(userFractionFloat)
 
         // Validate release status
-        await validateStatus(status, userFraction != undefined)
+        await validateStatus(status, userFractionFloat != undefined && !isNaN(userFractionFloat))
 
         // Validate the inAppUpdatePriority to be a valid number in within [0, 5]
         let inAppUpdatePriorityInt: number | undefined

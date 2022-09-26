@@ -124,17 +124,12 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
 
 async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
     const status = options.status
-    let userFraction: number | undefined = undefined
-
-    if (options.status != 'draft') {
-        userFraction = options.userFraction
-    }
 
     core.debug(`Creating release for:`);
     core.debug(`edit=${appEditId}`)
     core.debug(`track=${options.track}`)
-    if (userFraction) {
-        core.debug(`userFraction=${userFraction}`)
+    if (options.userFraction) {
+        core.debug(`userFraction=${options.userFraction}`)
     }
     core.debug(`status=${status}`)
     core.debug(`versionCodes=${versionCodes.toString()}`)
@@ -150,7 +145,7 @@ async function addReleasesToTrack(appEditId: string, options: EditOptions, versi
                 releases: [
                     {
                         name: options.name,
-                        userFraction: userFraction,
+                        userFraction: options.userFraction,
                         status: status,
                         inAppUpdatePriority: options.inAppUpdatePriority,
                         releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
