@@ -1,5 +1,6 @@
 import { run } from "../src/main"
 
+// Mock our edits interface to simply succeed
 jest.mock("../src/edits", () => {
     const originalModule = jest.requireActual("../src/edits")
 
@@ -10,6 +11,7 @@ jest.mock("../src/edits", () => {
     }
 })
 
+// We need to mock setFailed so we can actually capture issues instead of setting the process exit code
 jest.mock("@actions/core", () => {
     const originalModule = jest.requireActual("@actions/core")
 
@@ -191,6 +193,48 @@ test("correct inputs for inProgress rollout", async () => {
         "./__tests__/releasefiles/*.aab",
         "Release name",
         "production",
+        "0.5",
+        undefined,
+        "inProgress",
+        undefined,
+        undefined,
+        undefined,
+        "true",
+        "123"
+    )
+    await run()
+})
+
+test("correct inputs for draft rollout", async () => {
+    // Run with the bare minimum
+    initInputs(
+        undefined,
+        "{}",
+        "com.package.name",
+        undefined,
+        "./__tests__/releasefiles/*.aab",
+        undefined,
+        "production",
+        undefined,
+        undefined,
+        "draft",
+        undefined,
+        undefined,
+        undefined,
+        undefined,
+        undefined
+    )
+    await run()
+
+    // Test with optional extras
+    initInputs(
+        undefined,
+        "{}",
+        "com.package.name",
+        undefined,
+        "./__tests__/releasefiles/*.aab",
+        "Release name",
+        "draft",
         "0.5",
         undefined,
         "inProgress",
