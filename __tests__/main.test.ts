@@ -26,21 +26,21 @@ jest.mock("@actions/core", () => {
 })
 
 function initInputs(
-    serviceAccountJson: string | undefined = undefined,
-    serviceAccountJsonRaw: string | undefined = undefined,
-    packageName: string | undefined = undefined,
-    releaseFile: string | undefined = undefined,
-    releaseFiles: string | undefined = undefined,
-    releaseName: string | undefined = undefined,
-    track: string | undefined = undefined,
-    inAppUpdatePriority: string | undefined = undefined,
-    userFraction: string | undefined = undefined,
-    status: string | undefined = undefined,
-    whatsNewDir: string | undefined = undefined,
-    mappingFile: string | undefined = undefined,
-    debugSymbols: string | undefined = undefined,
-    changesNotSentForReview: string | undefined = undefined,
-    existingEditId: string | undefined = undefined,
+    serviceAccountJson: string | undefined,
+    serviceAccountJsonRaw: string | undefined,
+    packageName: string | undefined,
+    releaseFile: string | undefined,
+    releaseFiles: string | undefined,
+    releaseName: string | undefined,
+    track: string | undefined,
+    inAppUpdatePriority: string | undefined,
+    userFraction: string | undefined,
+    status: string | undefined,
+    whatsNewDir: string | undefined,
+    mappingFile: string | undefined,
+    debugSymbols: string | undefined,
+    changesNotSentForReview: string | undefined,
+    existingEditId: string | undefined,
 ) {
     if (serviceAccountJson) {
         process.env.INPUT_SERVICEACCOUNTJSON = serviceAccountJson
@@ -139,62 +139,6 @@ test("correct inputs for complete rollout", async () => {
         undefined
     )
     await run()
-    initInputs(
-        "./__tests__/someJsonThatTotallyExists.json",
-        undefined,
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        undefined,
-        "completed",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-    )
-    await run()
-
-    // Run with changesNotSentForReview specified
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        undefined,
-        "completed",
-        undefined,
-        undefined,
-        undefined,
-        "false",
-        undefined
-    )
-    await run()
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        undefined,
-        "completed",
-        undefined,
-        undefined,
-        undefined,
-        "true",
-        undefined
-    )
-    await run()
 
     // Test with optional extras
     initInputs(
@@ -211,8 +155,50 @@ test("correct inputs for complete rollout", async () => {
         undefined,
         undefined,
         undefined,
+        "true",
+        "123"
+    )
+    await run()
+})
+
+test("correct inputs for inProgress rollout", async () => {
+    // Run with the bare minimum
+    initInputs(
+        undefined,
+        "{}",
+        "com.package.name",
+        undefined,
+        "./__tests__/releasefiles/*.aab",
+        undefined,
+        "production",
+        "0.99",
+        undefined,
+        "inProgress",
+        undefined,
+        undefined,
+        undefined,
         undefined,
         undefined
+    )
+    await run()
+
+    // Test with optional extras
+    initInputs(
+        undefined,
+        "{}",
+        "com.package.name",
+        undefined,
+        "./__tests__/releasefiles/*.aab",
+        "Release name",
+        "production",
+        "0.5",
+        undefined,
+        "inProgress",
+        undefined,
+        undefined,
+        undefined,
+        "true",
+        "123"
     )
     await run()
 })
