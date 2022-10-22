@@ -34,7 +34,47 @@ export interface EditOptions {
     existingEditId?: string;
 }
 
-export async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | void> {
+export async function runUpload(
+    packageName: string,
+    track: string,
+    inAppUpdatePriority: number | undefined,
+    userFraction: number | undefined,
+    whatsNewDir: string | undefined,
+    mappingFile: string | undefined,
+    debugSymbols: string | undefined,
+    name: string | undefined,
+    changesNotSentForReview: boolean,
+    existingEditId: string | undefined,
+    status: string,
+    validatedReleaseFiles: string[]
+) {
+    const auth = new google.auth.GoogleAuth({
+        scopes: ['https://www.googleapis.com/auth/androidpublisher']
+    });
+
+    const authClient = await auth.getClient();
+
+    const result = await uploadToPlayStore({
+        auth: authClient,
+        applicationId: packageName,
+        track: track,
+        inAppUpdatePriority: inAppUpdatePriority || 0,
+        userFraction: userFraction,
+        whatsNewDir: whatsNewDir,
+        mappingFile: mappingFile,
+        debugSymbols: debugSymbols,
+        name: name,
+        changesNotSentForReview: changesNotSentForReview,
+        existingEditId: existingEditId,
+        status: status
+    }, validatedReleaseFiles);
+
+    if (result) {
+        console.log(`Finished uploading to the Play Store: ${result}`)
+    }
+}
+
+async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | void> {
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
     if (options.track === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
