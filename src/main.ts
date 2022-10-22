@@ -3,7 +3,6 @@ import * as fs from "fs";
 import { runUpload } from "./edits";
 import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
 import { unlink, writeFile } from 'fs/promises';
-import { exit } from 'process';
 
 export async function run() {
     try {
@@ -98,7 +97,7 @@ export async function run() {
     }
 }
 
-async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined) {
+async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined): Promise<string | undefined> {
     if (serviceAccountJson && serviceAccountJsonRaw) {
         // If the user provided both, print a warning one will be ignored
         core.warning('Both \'serviceAccountJsonPlainText\' and \'serviceAccountJson\' were provided! \'serviceAccountJson\' will be ignored.')
@@ -116,8 +115,7 @@ async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefi
         core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson)
     } else {
         // If the user provided neither, fail and exit
-        core.setFailed("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
-        exit()
+        return Promise.reject("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
     }
 }
 
