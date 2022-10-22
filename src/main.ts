@@ -10,66 +10,26 @@ const auth = new google.auth.GoogleAuth({
     scopes: ['https://www.googleapis.com/auth/androidpublisher']
 });
 
-async function runAction() {
-    const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
-    const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
-    const packageName = core.getInput('packageName', { required: true });
-    const releaseFile = core.getInput('releaseFile', { required: false });
-    const releaseFiles = core.getInput('releaseFiles', { required: false })
-        ?.split(',')
-        ?.filter(x => x !== '') || [];
-    const releaseName = core.getInput('releaseName', { required: false });
-    const track = core.getInput('track', { required: true });
-    const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
-    const userFraction = core.getInput('userFraction', { required: false })
-    const status = core.getInput('status', { required: false });
-    const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
-    const mappingFile = core.getInput('mappingFile', { required: false });
-    const debugSymbols = core.getInput('debugSymbols', { required: false });
-    const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
-    const existingEditId = core.getInput('existingEditId');
-
-    
-    // Check release files while maintaining backward compatibility
-    if (releaseFile) {
-        core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
-    }
-    
-    await run(
-        serviceAccountJson,
-        serviceAccountJsonRaw,
-        packageName,
-        releaseFiles ?? [releaseFile],
-        releaseName,
-        track,
-        inAppUpdatePriority,
-        userFraction,
-        status,
-        whatsNewDir,
-        mappingFile,
-        debugSymbols,
-        changesNotSentForReview,
-        existingEditId
-    )
-}
-
-export async function run(
-    serviceAccountJson: string | undefined,
-    serviceAccountJsonRaw: string | undefined,
-    packageName: string,
-    releaseFiles: string[],
-    releaseName: string | undefined,
-    track: string,
-    inAppUpdatePriority: string | undefined,
-    userFraction: string | undefined,
-    status: string,
-    whatsNewDir: string | undefined,
-    mappingFile: string | undefined,
-    debugSymbols: string | undefined,
-    changesNotSentForReview: boolean | undefined,
-    existingEditId: string | undefined
-) {
+async function run() {
     try {
+        const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
+        const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
+        const packageName = core.getInput('packageName', { required: true });
+        const releaseFile = core.getInput('releaseFile', { required: false });
+        const releaseFiles = core.getInput('releaseFiles', { required: false })
+            ?.split(',')
+            ?.filter(x => x !== '') || [];
+        const releaseName = core.getInput('releaseName', { required: false });
+        const track = core.getInput('track', { required: true });
+        const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
+        const userFraction = core.getInput('userFraction', { required: false })
+        const status = core.getInput('status', { required: false });
+        const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
+        const mappingFile = core.getInput('mappingFile', { required: false });
+        const debugSymbols = core.getInput('debugSymbols', { required: false });
+        const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
+        const existingEditId = core.getInput('existingEditId');
+
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
         // Validate user fraction
@@ -93,7 +53,11 @@ export async function run(
         }
         await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
-        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles)
+        // Check release files while maintaining backward compatibility
+        if (releaseFile) {
+            core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
+        }
+        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
@@ -168,4 +132,4 @@ async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefi
     }
 }
 
-void runAction();
+void run();
