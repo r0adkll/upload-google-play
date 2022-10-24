@@ -7,7 +7,22 @@ jest.mock("../src/edits", () => {
     return {
         __esModule: true,
         ...originalModule,
-        runUpload: Promise.resolve()
+        runUpload: jest.fn((
+            packageName: string,
+            track: string,
+            inAppUpdatePriority: number | undefined,
+            userFraction: number | undefined,
+            whatsNewDir: string | undefined,
+            mappingFile: string | undefined,
+            debugSymbols: string | undefined,
+            name: string | undefined,
+            changesNotSentForReview: boolean,
+            existingEditId: string | undefined,
+            status: string,
+            validatedReleaseFiles: string[]
+        ) => {
+            return Promise.resolve()
+        })
     }
 })
 
