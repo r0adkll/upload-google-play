@@ -158,7 +158,8 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
 
     // Check whether the track is valid
     if (allTracks.find(value => value.track == options.track) == undefined) {
-        throw Error(`Track "${options.track}" could not be found `);
+        const allTrackNames = allTracks.map((track) => { return track.track });
+        throw Error(`Track "${options.track}" could not be found. Available tracks are: ${allTrackNames.toString()}`);
     }
 }
 
