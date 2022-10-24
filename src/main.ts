@@ -28,7 +28,7 @@ export async function run() {
 
         // Validate user fraction
         let userFractionFloat: number | undefined
-        if (userFraction != undefined) {
+        if (userFraction) {
             userFractionFloat = parseFloat(userFraction)
         } else {
             userFractionFloat = undefined
