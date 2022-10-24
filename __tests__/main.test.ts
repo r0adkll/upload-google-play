@@ -27,7 +27,7 @@ jest.mock("@actions/core", () => {
     }
 })
 
-function initInputs(
+interface InputOptions {
     serviceAccountJson: string | undefined,
     serviceAccountJsonRaw: string | undefined,
     packageName: string | undefined,
@@ -43,79 +43,81 @@ function initInputs(
     debugSymbols: string | undefined,
     changesNotSentForReview: string | undefined,
     existingEditId: string | undefined,
-) {
-    if (serviceAccountJson) {
-        process.env.INPUT_SERVICEACCOUNTJSON = serviceAccountJson
+}
+
+function initInputs(params: InputOptions) {
+    if (params.serviceAccountJson) {
+        process.env.INPUT_SERVICEACCOUNTJSON = params.serviceAccountJson
     } else {
         delete process.env.INPUT_SERVICEACCOUNTJSON
     }
-    if (serviceAccountJsonRaw) {
-        process.env.INPUT_SERVICEACCOUNTJSONPLAINTEXT = serviceAccountJsonRaw
+    if (params.serviceAccountJsonRaw) {
+        process.env.INPUT_SERVICEACCOUNTJSONPLAINTEXT = params.serviceAccountJsonRaw
     } else {
         delete process.env.INPUT_SERVICEACCOUNTJSONPLAINTEXT
     }
-    if (packageName) {
-        process.env.INPUT_PACKAGENAME = packageName
+    if (params.packageName) {
+        process.env.INPUT_PACKAGENAME = params.packageName
     } else {
         delete process.env.INPUT_PACKAGENAME
     }
-    if (releaseFile) {
-        process.env.INPUT_RELEASEFILE = releaseFile
+    if (params.releaseFile) {
+        process.env.INPUT_RELEASEFILE = params.releaseFile
     } else {
         delete process.env.INPUT_RELEASEFILE
     }
-    if (releaseFiles) {
-        process.env.INPUT_RELEASEFILES = releaseFiles
+    if (params.releaseFiles) {
+        process.env.INPUT_RELEASEFILES = params.releaseFiles
     } else {
         delete process.env.INPUT_RELEASEFILES
     }
-    if (releaseName) {
-        process.env.INPUT_RELEASENAME = releaseName
+    if (params.releaseName) {
+        process.env.INPUT_RELEASENAME = params.releaseName
     } else {
         delete process.env.INPUT_RELEASENAME
     }
-    if (track) {
-        process.env.INPUT_TRACK = track
+    if (params.track) {
+        process.env.INPUT_TRACK = params.track
     } else {
         delete process.env.INPUT_TRACK
     }
-    if (inAppUpdatePriority) {
-        process.env.INPUT_INAPPUPDATEPRIORITY = inAppUpdatePriority
+    if (params.inAppUpdatePriority) {
+        process.env.INPUT_INAPPUPDATEPRIORITY = params.inAppUpdatePriority
     } else {
         delete process.env.INPUT_INAPPUPDATEPRIORITY
     }
-    if (userFraction) {
-        process.env.INPUT_USERFRACTION = userFraction
+    if (params.userFraction) {
+        process.env.INPUT_USERFRACTION = params.userFraction
     } else {
         delete process.env.INPUT_USERFRACTION
     }
-    if (status) {
-        process.env.INPUT_STATUS = status
+    if (params.status) {
+        process.env.INPUT_STATUS = params.status
     } else {
         delete process.env.INPUT_STATUS
     }
-    if (whatsNewDir) {
-        process.env.INPUT_WHATSNEWDIR = whatsNewDir
+    if (params.whatsNewDir) {
+        process.env.INPUT_WHATSNEWDIR = params.whatsNewDir
     } else {
         delete process.env.INPUT_WHATSNEWDIR
     }
-    if (mappingFile) {
-        process.env.INPUT_MAPPINGFILE = mappingFile
+    if (params.mappingFile) {
+        process.env.INPUT_MAPPINGFILE = params.mappingFile
     } else {
         delete process.env.INPUT_MAPPINGFILE
     }
-    if (debugSymbols) {
-        process.env.INPUT_DEBUGSYMBOLS = debugSymbols
+    if (params.debugSymbols) {
+        process.env.INPUT_DEBUGSYMBOLS = params.debugSymbols
     } else {
         delete process.env.INPUT_DEBUGSYMBOLS
     }
-    if (changesNotSentForReview) {
-        process.env.INPUT_CHANGESNOTSENTFORREVIEW = changesNotSentForReview
+    if (params.changesNotSentForReview) {
+        process.env.INPUT_CHANGESNOTSENTFORREVIEW = params.changesNotSentForReview
     } else {
         delete process.env.INPUT_CHANGESNOTSENTFORREVIEW
     }
-    if (existingEditId) {
-        process.env.INPUT_EXISTINGEDITID = existingEditId
+    if (params.existingEditId) {
+        process.env.INPUT_EXISTINGEDITID = params.existingEditId
     } else {
         delete process.env.INPUT_EXISTINGEDITID
     }
@@ -123,126 +125,126 @@ function initInputs(
 
 test("correct inputs for complete rollout", async () => {
     // Run with the bare minimum
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        undefined,
-        "completed",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: undefined,
+        track: "production",
+        inAppUpdatePriority: undefined,
+        userFraction: undefined,
+        status: "completed",
+        whatsNewDir: undefined,
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: undefined,
+        existingEditId: undefined
+    })
     await run()
 
     // Test with optional extras
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        "Release name",
-        "production",
-        undefined,
-        undefined,
-        "completed",
-        undefined,
-        undefined,
-        undefined,
-        "true",
-        "123"
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: "Release name",
+        track: "production",
+        inAppUpdatePriority: "3",
+        userFraction: undefined,
+        status: "completed",
+        whatsNewDir: "./__tests__/whatsnew",
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: "true",
+        existingEditId: "123"
+    })
     await run()
 })
 
 test("correct inputs for inProgress rollout", async () => {
     // Run with the bare minimum
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        "0.99",
-        "inProgress",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: undefined,
+        track: "production",
+        inAppUpdatePriority: undefined,
+        userFraction: "0.99",
+        status: "inProgress",
+        whatsNewDir: undefined,
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: undefined,
+        existingEditId: undefined
+    })
     await run()
 
     // Test with optional extras
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        "Release name",
-        "production",
-        undefined,
-        "0.5",
-        "inProgress",
-        undefined,
-        undefined,
-        undefined,
-        "true",
-        "123"
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: "Release name",
+        track: "production",
+        inAppUpdatePriority: "3",
+        userFraction: "0.5",
+        status: "inProgress",
+        whatsNewDir: "./__tests__/whatsnew",
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: "true",
+        existingEditId: "123"
+    })
     await run()
 })
 
 test("correct inputs for draft rollout", async () => {
     // Run with the bare minimum
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        undefined,
-        "production",
-        undefined,
-        undefined,
-        "draft",
-        undefined,
-        undefined,
-        undefined,
-        undefined,
-        undefined
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: undefined,
+        track: "production",
+        inAppUpdatePriority: undefined,
+        userFraction: undefined,
+        status: "draft",
+        whatsNewDir: undefined,
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: undefined,
+        existingEditId: undefined
+    })
     await run()
 
     // Test with optional extras
-    initInputs(
-        undefined,
-        "{}",
-        "com.package.name",
-        undefined,
-        "./__tests__/releasefiles/*.aab",
-        "Release name",
-        "draft",
-        "0.5",
-        undefined,
-        "inProgress",
-        undefined,
-        undefined,
-        undefined,
-        "true",
-        "123"
-    )
+    initInputs({
+        serviceAccountJson: undefined,
+        serviceAccountJsonRaw: "{}",
+        packageName: "com.package.name",
+        releaseFile: undefined,
+        releaseFiles: "./__tests__/releasefiles/*.aab",
+        releaseName: "Release name",
+        track: "production",
+        inAppUpdatePriority: "3",
+        userFraction: undefined,
+        status: "draft",
+        whatsNewDir: "./__tests__/whatsnew",
+        mappingFile: undefined,
+        debugSymbols: undefined,
+        changesNotSentForReview: "true",
+        existingEditId: "123"
+    })
     await run()
 })
