@@ -362,6 +362,7 @@ async function getOrCreateEdit(options: EditOptions): Promise<string> {
         throw Error('New edit has no ID, cannot continue.')
     }
 
+    core.debug(`This new edit expires at ${String(insertResult.data.expiryTimeSeconds)}`)
     // Return the new edit ID
     return insertResult.data.id
 }
