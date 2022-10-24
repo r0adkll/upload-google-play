@@ -1,16 +1,10 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
-import {uploadToPlayStore} from "./edits";
+import { runUpload } from "./edits";
 import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
-import * as google from '@googleapis/androidpublisher';
 import { unlink, writeFile } from 'fs/promises';
-import { exit } from 'process';
 
-const auth = new google.auth.GoogleAuth({
-    scopes: ['https://www.googleapis.com/auth/androidpublisher']
-});
-
-async function run() {
+export async function run() {
     try {
         const serviceAccountJson = core.getInput('serviceAccountJson', { required: false });
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
@@ -34,7 +28,7 @@ async function run() {
 
         // Validate user fraction
         let userFractionFloat: number | undefined
-        if (userFraction != undefined) {
+        if (userFraction) {
             userFractionFloat = parseFloat(userFraction)
         } else {
             userFractionFloat = undefined
@@ -74,26 +68,20 @@ async function run() {
             return
         }
 
-        const authClient = await auth.getClient();
-
-        const result = await uploadToPlayStore({
-            auth: authClient,
-            applicationId: packageName,
-            track: track,
-            inAppUpdatePriority: inAppUpdatePriorityInt || 0,
-            userFraction: userFractionFloat,
-            whatsNewDir: whatsNewDir,
-            mappingFile: mappingFile,
-            debugSymbols: debugSymbols,
-            name: releaseName,
-            changesNotSentForReview: changesNotSentForReview,
-            existingEditId: existingEditId,
-            status: status
-        }, validatedReleaseFiles);
-
-        if (result) {
-            console.log(`Finished uploading to the Play Store: ${result}`)
-        }
+        await runUpload(
+            packageName,
+            track,
+            inAppUpdatePriorityInt,
+            userFractionFloat,
+            whatsNewDir,
+            mappingFile,
+            debugSymbols,
+            releaseName,
+            changesNotSentForReview,
+            existingEditId,
+            status,
+            validatedReleaseFiles
+        )
     } catch (error: unknown) {
         if (error instanceof Error) {
             core.setFailed(error.message)
@@ -109,7 +97,7 @@ async function run() {
     }
 }
 
-async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined) {
+async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefined, serviceAccountJson: string | undefined): Promise<string | undefined> {
     if (serviceAccountJson && serviceAccountJsonRaw) {
         // If the user provided both, print a warning one will be ignored
         core.warning('Both \'serviceAccountJsonPlainText\' and \'serviceAccountJson\' were provided! \'serviceAccountJson\' will be ignored.')
@@ -127,8 +115,7 @@ async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefi
         core.exportVariable("GOOGLE_APPLICATION_CREDENTIALS", serviceAccountJson)
     } else {
         // If the user provided neither, fail and exit
-        core.setFailed("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
-        exit()
+        return Promise.reject("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
     }
 }
 
