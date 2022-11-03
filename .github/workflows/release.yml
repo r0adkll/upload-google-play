@@ -1,24 +1,16 @@
-name: "Tag & Deploy Action"
+name: "Update v1 tag"
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [released]
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v1
+    - uses: actions/checkout@v2.5.0
 
-    - name: Install
-      run: npm ci
-
-    - name: Run Tests
-      run: npm run test
-
-    - name: Update v1 Tag
-      uses: hole19/git-tag-action@master
-      env:
-        TAG: v1
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - uses: rickstaa/action-create-tag@v1
+      with:
+        tag: v1
+        force_push_tag: true
