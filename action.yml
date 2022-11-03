@@ -36,7 +36,8 @@ inputs:
     required: false
   status:
     description: "Release status. This can be set to 'draft' to complete the release at some other time."
-    required: false
+    required: true
+    default: "completed"
   whatsNewDirectory:
     description: "The directory of localized whats new files"
     required: false

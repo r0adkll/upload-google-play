@@ -8,6 +8,17 @@ async function expectRunInitiatesUpload(options: RunOptions) {
     expect(result.commands.errors).toContainEqual("The incoming JSON object does not contain a client_email field")
 }
 
+test("correct bare minimum inputs", async () => {
+    const minimumOptions = RunOptions.create()
+        .setInputs({
+            serviceAccountJsonPlainText: "{}",
+            packageName: "com.package.name",
+            releaseFiles: "./__tests__/releasefiles/*.aab",
+            track: "production",
+        })
+    await expectRunInitiatesUpload(minimumOptions)
+})
+
 test("correct inputs for complete rollout", async () => {
     // Run with the bare minimum
     const minimumOptions = RunOptions.create()
@@ -34,8 +45,8 @@ test("correct inputs for complete rollout", async () => {
             changesNotSentForReview: "true",
             existingEditId: "123"
         })
-        await expectRunInitiatesUpload(extraOptions)
-    })
+    await expectRunInitiatesUpload(extraOptions)
+})
 
 test("correct inputs for inProgress rollout", async () => {
     // Run with the bare minimum
@@ -48,7 +59,7 @@ test("correct inputs for inProgress rollout", async () => {
             userFraction: "0.99",
             status: "inProgress",
         })
-        await expectRunInitiatesUpload(minimumOptions)
+    await expectRunInitiatesUpload(minimumOptions)
 
     // Test with optional extras
     const extraOptions = RunOptions.create()
@@ -65,7 +76,7 @@ test("correct inputs for inProgress rollout", async () => {
             changesNotSentForReview: "true",
             existingEditId: "123"
         })
-        await expectRunInitiatesUpload(extraOptions)
+    await expectRunInitiatesUpload(extraOptions)
 })
 
 test("correct inputs for draft rollout", async () => {
@@ -78,7 +89,7 @@ test("correct inputs for draft rollout", async () => {
             track: "production",
             status: "draft",
         })
-        await expectRunInitiatesUpload(minimumOptions)
+    await expectRunInitiatesUpload(minimumOptions)
 
     // Test with optional extras
     const extraOptions = RunOptions.create()
@@ -94,5 +105,5 @@ test("correct inputs for draft rollout", async () => {
             changesNotSentForReview: "true",
             existingEditId: "123"
         })
-        await expectRunInitiatesUpload(extraOptions)
-    })
+    await expectRunInitiatesUpload(extraOptions)
+})
