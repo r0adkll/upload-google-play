@@ -12,7 +12,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | track | The track in which you want to assign the uploaded app. Defaults to `production` | One of `production`, `beta`, `alpha`, `internalsharing`, `internal`, or a custom track name (case sensitive) | true |
 | releaseName | The release name. Not required to be unique. Default is configured by Google Play Console | A user-friendly update name, e.g. `v1.0.0` | false |
 | inAppUpdatePriority | In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Defaults to `0` | `[0-5]`, where `5` is the highest priority | false |
-| userFraction | Percentage of users who should get the staged version of the app. Defaults to `1.0` | `[0.0-1.0]` | true |
+| userFraction | Percentage of users who should get the staged version of the app. Defaults to `1.0` | `[0.0-1.0]` | false |
 | status | Release status. Defaults to `completed` if targeting 100% rollout, `halted` for 0%, and `inProgress` for anything in between. Defaults to `completed` | One of `completed`, `inProgress`, `halted`, `draft` | true |
 | whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
 | mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
