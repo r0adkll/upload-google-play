@@ -54,18 +54,15 @@ export async function run() {
         const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
-            core.setFailed(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
-            return
+            core.warning(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
         }
 
         if (mappingFile != undefined && mappingFile.length > 0 && !fs.existsSync(mappingFile)) {
-            core.setFailed(`Unable to find 'mappingFile' @ ${mappingFile}`);
-            return
+            core.warning(`Unable to find 'mappingFile' @ ${mappingFile}`);
         }
 
         if (debugSymbols != undefined && debugSymbols.length > 0 && !fs.existsSync(debugSymbols)) {
-            core.setFailed(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
-            return
+            core.warning(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
         }
 
         await runUpload(
