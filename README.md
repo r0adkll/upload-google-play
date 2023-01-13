@@ -8,7 +8,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | --- | --- | --- | --- |
 | releaseFiles | The Android release file(s) to upload (.apk or .aab) | Comma-separated paths. Supports glob via [fast-glob](https://github.com/mrmlnc/fast-glob) | true |
 | serviceAccountJsonPlainText | The service account json in plain text, provided via a secret, etc | The contents of your `service-account.json` | true (or serviceAccountJson) |
-| packageName | The package name, or Application Id, of the app you are uploading | A valid package name, e.g. `com.example.myapp` | true |
+| packageName | The package name, or Application Id, of the app you are uploading | A valid package name, e.g. `com.example.myapp`. The packageName must already exist in the play console account, so make sure you upload a manual apk or aab first through the console | true |
 | track | The track in which you want to assign the uploaded app. Defaults to `production` | One of `production`, `beta`, `alpha`, `internalsharing`, `internal`, or a custom track name (case sensitive) | true |
 | releaseName | The release name. Not required to be unique. Default is configured by Google Play Console | A user-friendly update name, e.g. `v1.0.0` | false |
 | inAppUpdatePriority | In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Defaults to `0` | `[0-5]`, where `5` is the highest priority | false |
@@ -47,6 +47,10 @@ with:
   mappingFile: app/build/outputs/mapping/release/mapping.txt
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
 ```
+
+## FAQ
+### I get the error "Package not found"
+Make sure you upload an apk or aab manually first by creating a release through the play console.
 
 The `whatsNewDirectory` in this example supplies changelogs for English, German and Japanese
 
