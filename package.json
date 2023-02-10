@@ -23,7 +23,8 @@
     "@actions/core": "^1.10.0",
     "@googleapis/androidpublisher": "^4.1.0",
     "fast-glob": "^3.2.12",
-    "jszip": "^3.10.1"
+    "jszip": "^3.10.1",
+    "p-timeout": "^6.1.0"
   },
   "devDependencies": {
     "@types/jest": "^29.2.0",
