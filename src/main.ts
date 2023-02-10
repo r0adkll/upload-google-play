@@ -65,19 +65,22 @@ export async function run() {
             core.warning(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
         }
 
-        await runUpload(
-            packageName,
-            track,
-            inAppUpdatePriorityInt,
-            userFractionFloat,
-            whatsNewDir,
-            mappingFile,
-            debugSymbols,
-            releaseName,
-            changesNotSentForReview,
-            existingEditId,
-            status,
-            validatedReleaseFiles
+        await withTimeout(
+            3.6e+6, // 60 minute timeout
+            runUpload(
+                packageName,
+                track,
+                inAppUpdatePriorityInt,
+                userFractionFloat,
+                whatsNewDir,
+                mappingFile,
+                debugSymbols,
+                releaseName,
+                changesNotSentForReview,
+                existingEditId,
+                status,
+                validatedReleaseFiles
+            )
         )
     } catch (error: unknown) {
         if (error instanceof Error) {
@@ -114,6 +117,13 @@ async function validateServiceAccountJson(serviceAccountJsonRaw: string | undefi
         // If the user provided neither, fail and exit
         return Promise.reject("You must provide one of 'serviceAccountJsonPlainText' or 'serviceAccountJson' to use this action")
     }
+}
+
+async function withTimeout<T>(timeoutMillis: number, promise: Promise<T>): Promise<T> {
+    return Promise.race([
+        new Promise<never>((_, reject) => setTimeout(reject, timeoutMillis)),
+        promise
+    ])
 }
 
 void run();
