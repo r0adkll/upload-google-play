@@ -13,7 +13,7 @@ export async function run() {
         const releaseFile = core.getInput('releaseFile', { required: false });
         const releaseFiles = core.getInput('releaseFiles', { required: false })
             ?.split(',')
-            ?.filter(x => x !== '') || [];
+            ?.filter(x => x !== '');
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: true });
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
