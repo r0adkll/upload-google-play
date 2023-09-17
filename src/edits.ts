@@ -13,14 +13,13 @@ import Apk = androidpublisher_v3.Schema$Apk;
 import Bundle = androidpublisher_v3.Schema$Bundle;
 import Track = androidpublisher_v3.Schema$Track;
 import InternalAppSharingArtifact = androidpublisher_v3.Schema$InternalAppSharingArtifact;
-import { Compute } from "google-auth-library/build/src/auth/computeclient";
-import { JSONClient } from "google-auth-library/build/src/auth/googleauth"
+import { GoogleAuth } from "google-auth-library/build/src/auth/googleauth"
 import { readLocalizedReleaseNotes } from "./whatsnew";
 
 const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 
 export interface EditOptions {
-    auth: Compute | JSONClient;
+    auth: GoogleAuth;
     applicationId: string;
     track: string;
     inAppUpdatePriority: number;
@@ -52,10 +51,8 @@ export async function runUpload(
         scopes: ['https://www.googleapis.com/auth/androidpublisher']
     });
 
-    const authClient = await auth.getClient();
-
     const result = await uploadToPlayStore({
-        auth: authClient,
+        auth: auth,
         applicationId: packageName,
         track: track,
         inAppUpdatePriority: inAppUpdatePriority || 0,
