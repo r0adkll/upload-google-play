@@ -49,7 +49,7 @@ export async function runUpload(
     validatedReleaseFiles: string[]
 ) {
     const auth = new google.auth.GoogleAuth({
-        scopes: ['https://www.googleapis.com/auth/androidpublisher']
+        scopes: ['https://androidpublisher.googleapis.com/']
     });
 
     const authClient = await auth.getClient();
