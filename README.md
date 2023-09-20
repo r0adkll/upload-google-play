@@ -21,6 +21,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | true (or serviceAccountJsonPlainText) |
 | existingEditId | The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit | A valid, unpublished Edit ID | false |
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
+| maxRetriesForUpload | How many times to reattempt to upload to Google Play if an upload fails. Defaults to `0` reattempts, aside from the initial upload, but can be 0 to 99 (inclusive-inclusive) | `[0-99]` | false |
 
 ## Outputs
 
@@ -46,6 +47,7 @@ with:
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
+  maxRetriesForUpload: 5
 ```
 
 ## FAQ

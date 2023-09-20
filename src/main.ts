@@ -1,7 +1,7 @@
 import * as core from '@actions/core'
 import * as fs from "fs"
 import { runUpload } from "./edits"
-import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
+import { validateInAppUpdatePriority, validateMaxRetriesForUpload, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
 import { unlink, writeFile } from 'fs/promises'
 import pTimeout from 'p-timeout'
 
@@ -24,6 +24,7 @@ export async function run() {
         const debugSymbols = core.getInput('debugSymbols', { required: false });
         const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
         const existingEditId = core.getInput('existingEditId');
+        const maxRetriesForUpload = core.getInput('maxRetriesForUpload', { required: false });
 
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
@@ -48,6 +49,14 @@ export async function run() {
         }
         await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
+        let maxRetriesForUploadInt = 0
+        if (maxRetriesForUpload) {
+            maxRetriesForUploadInt = parseInt(maxRetriesForUpload)
+        } else {
+            maxRetriesForUploadInt = 0
+        }
+        await validateMaxRetriesForUpload(maxRetriesForUploadInt)
+
         // Check release files while maintaining backward compatibility
         if (releaseFile) {
             core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
@@ -66,25 +75,43 @@ export async function run() {
             core.warning(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
         }
 
-        await pTimeout(
-            runUpload(
-                packageName,
-                track,
-                inAppUpdatePriorityInt,
-                userFractionFloat,
-                whatsNewDir,
-                mappingFile,
-                debugSymbols,
-                releaseName,
-                changesNotSentForReview,
-                existingEditId,
-                status,
-                validatedReleaseFiles
-            ),
-            {
-                milliseconds: 3.6e+6
+        let retries = maxRetriesForUploadInt;
+        let success = false;
+        while (retries >= 0) {
+            try {
+                await pTimeout(
+                    runUpload(
+                        packageName,
+                        track,
+                        inAppUpdatePriorityInt,
+                        userFractionFloat,
+                        whatsNewDir,
+                        mappingFile,
+                        debugSymbols,
+                        releaseName,
+                        changesNotSentForReview,
+                        existingEditId,
+                        status,
+                        validatedReleaseFiles
+                    ),
+                    {
+                        milliseconds: 3.6e+6
+                    }
+                );
+                success = true;
+                break;
+            } catch (error) {
+                retries--;
+                if (retries > 0) {
+                    core.warning(`runUpload() failed. Will try again ${retries} more time(s)`);
+                }
             }
-        )
+        }
+
+        if (!success) {
+            throw new Error(`runUpload() failed after ${maxRetriesForUploadInt + 1} attempts`);
+        }
+
     } catch (error: unknown) {
         if (error instanceof Error) {
             core.setFailed(error.message)
@@ -92,7 +119,7 @@ export async function run() {
             core.setFailed('Unknown error occurred.')
         }
     } finally {
-        if (core.getInput('serviceAccountJsonPlainText', { required: false})) {
+        if (core.getInput('serviceAccountJsonPlainText', { required: false })) {
             // Cleanup our auth file that we created.
             core.debug('Cleaning up service account json file');
             await unlink('./serviceAccountJson.json');

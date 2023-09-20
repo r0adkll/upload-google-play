@@ -43,6 +43,14 @@ export async function validateInAppUpdatePriority(inAppUpdatePriority: number | 
     }
 }
 
+export async function validateMaxRetriesForUpload(maxRetriesForUpload: number | undefined): Promise<void> {
+    if (maxRetriesForUpload) {
+        if (maxRetriesForUpload < 0 || maxRetriesForUpload > 99) {
+            return Promise.reject(new Error('maxRetriesForUpload must be between 0 and 99, inclusive-inclusive'))
+        }
+    }
+}
+
 export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string[]> {
     if (!releaseFiles) {
         return Promise.reject(new Error(`You must provide 'releaseFiles' in your configuration`))
