@@ -178,6 +178,12 @@ async function addReleasesToTrack(appEditId: string, options: EditOptions, versi
     core.debug(`track=${options.track}`)
     if (options.userFraction) {
         core.debug(`userFraction=${options.userFraction}`)
+
+        // When all users are targeted (i.e. userFraction equal to 1) modify it to be undfined as required by the update
+        // function provided by androidPublisher.edit.tracks
+        if (options.userFraction === 1.0) {
+            options.userFraction = undefined;
+        }
     }
     core.debug(`status=${status}`)
     core.debug(`versionCodes=${versionCodes.toString()}`)

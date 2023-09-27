@@ -6,7 +6,7 @@ export async function validateUserFraction(userFraction: number | undefined): Pr
         if (isNaN(userFraction)) {
             return Promise.reject(new Error(`'userFraction' must be a number! Got ${userFraction}`))
         }
-        if (userFraction >= 1 || userFraction <= 0) {
+        if (userFraction > 1 || userFraction <= 0) {
             return Promise.reject(new Error(`'userFraction' must be between 0 and 1! Got ${userFraction}`))
         }
     }
