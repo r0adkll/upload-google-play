@@ -48,6 +48,20 @@ with:
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
 ```
 
+## Configure service account
+1. Configure service account in Google Cloud Platform
+   1. Navigate to https://cloud.google.com/gcp
+   1. Open IAM and admin > Service accounts > Create service account
+   1. Pick a name and add appropriate permissions (e.g. 'owner)
+   1. Open the newly created service account, click on `keys` tab and add a new key, JSON type
+   1. When successful, a JSON file will be automatically downloaded on your machine
+   1. Store the content of this file to your GitHub secrets, e.g. SERVICE_ACCOUNT_JSON.
+1. Add user to Google Play Console
+   1. Open https://play.google.com/console and pick your developer account
+   1. Open Users and permissions
+   1. Click invite new user and add the email of the service account created in the previous step
+   1. Grant permissions to the app that you want the service account to deploy in `app permissions`
+
 ## FAQ
 ### I get the error "Package not found"
 Make sure you upload an apk or aab manually first by creating a release through the play console.
