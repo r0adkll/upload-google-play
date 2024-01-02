@@ -28,7 +28,7 @@ jobs:
       
       # Check whether the compiled library changed
       - name: Check Build Updated
-        uses: tj-actions/verify-changed-files@v9.2
+        uses: tj-actions/verify-changed-files@v17
         id: verify-built-lib
         with:
           files: lib/index.js
