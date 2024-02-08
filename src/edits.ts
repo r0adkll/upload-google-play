@@ -45,10 +45,12 @@ export async function runUpload(
     changesNotSentForReview: boolean,
     existingEditId: string | undefined,
     status: string,
+    projectId: string,
     validatedReleaseFiles: string[]
 ) {
     const auth = new google.auth.GoogleAuth({
-        scopes: ['https://www.googleapis.com/auth/androidpublisher']
+        scopes: ['https://www.googleapis.com/auth/androidpublisher'],
+        projectId: projectId
     });
 
     const result = await uploadToPlayStore({

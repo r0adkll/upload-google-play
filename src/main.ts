@@ -11,6 +11,7 @@ export async function run() {
         const serviceAccountJsonRaw = core.getInput('serviceAccountJsonPlainText', { required: false});
         const packageName = core.getInput('packageName', { required: true });
         const releaseFile = core.getInput('releaseFile', { required: false });
+        const projectId = core.getInput('projectId', { required: false });
         const releaseFiles = core.getInput('releaseFiles', { required: false })
             ?.split(',')
             ?.filter(x => x !== '');
@@ -79,6 +80,7 @@ export async function run() {
                 changesNotSentForReview,
                 existingEditId,
                 status,
+                projectId,
                 validatedReleaseFiles
             ),
             {
