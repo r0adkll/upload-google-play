@@ -54,6 +54,9 @@ inputs:
   existingEditId:
     description: "The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit"
     required: false
+  maxRetriesForUpload:
+    description: "How many times to reattempt to upload to Google Play if an upload fails. Defaults to 0 reattempts, aside from the initial upload, but can be 0 to 99 (inclusive-inclusive)"
+    required: false  
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
