@@ -61,6 +61,9 @@ with:
    1. Open Users and permissions
    1. Click invite new user and add the email of the service account created in the previous step
    1. Grant permissions to the app that you want the service account to deploy in `app permissions`
+1. Enable the Google Play Android Developer API
+   1. Go to https://console.cloud.google.com/apis/library/androidpublisher.googleapis.com
+   1. Click on Enable
 
 ## FAQ
 ### I get the error "Package not found"
