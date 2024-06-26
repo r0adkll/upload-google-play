@@ -48,22 +48,36 @@ with:
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
 ```
 
-## Configure service account
-1. Configure service account in Google Cloud Platform
-   1. Navigate to https://cloud.google.com/gcp
-   1. Open IAM and admin > Service accounts > Create service account
-   1. Pick a name and add appropriate permissions (e.g. 'owner)
-   1. Open the newly created service account, click on `keys` tab and add a new key, JSON type
-   1. When successful, a JSON file will be automatically downloaded on your machine
-   1. Store the content of this file to your GitHub secrets, e.g. SERVICE_ACCOUNT_JSON.
-1. Add user to Google Play Console
-   1. Open https://play.google.com/console and pick your developer account
-   1. Open Users and permissions
-   1. Click invite new user and add the email of the service account created in the previous step
-   1. Grant permissions to the app that you want the service account to deploy in `app permissions`
-1. Enable the Google Play Android Developer API
-   1. Go to https://console.cloud.google.com/apis/library/androidpublisher.googleapis.com
-   1. Click on Enable
+## Configure access via service account
+1. Enable the Google Play Android Developer API.
+   1. Go to https://console.cloud.google.com/apis/library/androidpublisher.googleapis.com.
+   1. Click on Enable.
+1. Create a new service account in Google Cloud Platform ([docs](https://developers.google.com/android-publisher/getting_started#service-account)).
+   1. Navigate to https://cloud.google.com/gcp.
+   1. Open `IAM & Admin` > `Service accounts` > `Create service account`.
+   1. Pick a name for the new account. Do not grant the account any permissions.
+   1. To use it from the GitHub Action use either:
+      - Account key in GitHub secrets (simpler):
+        1. Open the newly created service account, click on `keys` tab and add a new key, JSON type.
+        1. When successful, a JSON file will be automatically downloaded on your machine.
+        1. Store the content of this file to your GitHub secrets, e.g. `SERVICE_ACCOUNT_JSON`.
+        2. Set `serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_JSON }}` when using this action.
+      - Workload identity authentication (more secure, recommended by GCP):
+        1. Configure workload identity provider in the same project as the new service account ([docs](https://github.com/google-github-actions/auth)).
+        1. Run a step to obtain short-lived access credentials:
+           ```
+           - id: auth
+             uses: google-github-actions/auth@v2
+             with:
+               workload_identity_provider: <project>/.../workloadIdentityPools/<provider>
+               service_account: <service-account>@<project>.iam.gserviceaccount.com
+           ```
+        1. Set `serviceAccountJson: ${{ steps.auth.outputs.credentials_file_path }}` when using this action.
+1. Add the service account to Google Play Console.
+   1. Open https://play.google.com/console and pick your developer account.
+   1. Open Users and permissions.
+   1. Click invite new user and add the email of the service account created in the previous step.
+   1. Grant permissions to the app that you want the service account to deploy in `app permissions`.
 
 ## FAQ
 ### I get the error "Package not found"
