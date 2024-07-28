@@ -28,6 +28,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | --- | --- | --- |
 | internalSharingDownloadUrls | INTERNAL_SHARING_DOWNLOAD_URLS | A JSON list containing the download urls for every release file uploaded using the `internalsharing` track |
 | internalSharingDownloadUrl | INTERNAL_SHARING_DOWNLOAD_URL | The download url for the last release file uploaded using the `internalsharing` track |
+| versionCode | N/A | The versionCode of the last successfully committed edit |
 
 ## Example usage
 
