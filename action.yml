@@ -57,6 +57,8 @@ inputs:
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
+  versionCode:
+    description: "The versionCode of the last successfully committed edit"
 runs:
   using: 'node20'
   main: 'lib/index.js'
