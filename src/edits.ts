@@ -115,8 +115,11 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         if (res.data.id) {
             core.info(`Successfully committed ${res.data.id}`);
 		
-	    core.setOutput("uploadEditId", appEditId);
-   	    core.exportVariable("UPLOAD_EDIT_ID", appEditId);  
+	    core.setOutput("committedEditId", res.data.id);
+	    core.setOutput("commitedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
+		
+   	    core.exportVariable("COMMITED_EDIT_ID", res.data.id);  
+	    core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);  
 		
             return res.data.id
         } else {
