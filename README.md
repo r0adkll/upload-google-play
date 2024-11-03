@@ -28,6 +28,9 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | --- | --- | --- |
 | internalSharingDownloadUrls | INTERNAL_SHARING_DOWNLOAD_URLS | A JSON list containing the download urls for every release file uploaded using the `internalsharing` track |
 | internalSharingDownloadUrl | INTERNAL_SHARING_DOWNLOAD_URL | The download url for the last release file uploaded using the `internalsharing` track |
+committedEditId | COMMITTED_EDIT_ID | The unique identifier of the committed edit. |
+committedEditIdExpiryTimeSeconds | COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS | Time in seconds until the committed edit expires. |
+ 
 
 ## Example usage
 
