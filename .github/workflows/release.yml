@@ -8,7 +8,7 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2.5.0
+    - uses: actions/checkout@v4
 
     - uses: rickstaa/action-create-tag@v1
       with:

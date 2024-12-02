@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Set up NPM and deps
       - name: Set up NPM
@@ -28,7 +28,7 @@ jobs:
       
       # Check whether the compiled library changed
       - name: Check Build Updated
-        uses: tj-actions/verify-changed-files@v17
+        uses: tj-actions/verify-changed-files@v18
         id: verify-built-lib
         with:
           files: lib/index.js
