@@ -21,7 +21,7 @@ const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 export interface EditOptions {
     auth: GoogleAuth;
     applicationId: string;
-    track: string;
+    tracks: string[];
     inAppUpdatePriority: number;
     userFraction?: number;
     whatsNewDir?: string;
@@ -35,7 +35,7 @@ export interface EditOptions {
 
 export async function runUpload(
     packageName: string,
-    track: string,
+    tracks: string[],
     inAppUpdatePriority: number | undefined,
     userFraction: number | undefined,
     whatsNewDir: string | undefined,
@@ -54,7 +54,7 @@ export async function runUpload(
     const result = await uploadToPlayStore({
         auth: auth,
         applicationId: packageName,
-        track: track,
+        tracks: tracks,
         inAppUpdatePriority: inAppUpdatePriority || 0,
         userFraction: userFraction,
         whatsNewDir: whatsNewDir,
@@ -74,7 +74,7 @@ export async function runUpload(
 async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | void> {
     const internalSharingDownloadUrls: string[] = []
     // Check the 'track' for 'internalsharing', if so switch to a non-track api
-    if (options.track === 'internalsharing') {
+    if (options.tracks[0] === 'internalsharing') {
         core.debug("Track is Internal app sharing, switch to special upload api")
         for (const releaseFile of releaseFiles) {
             core.debug(`Uploading ${releaseFile}`);
@@ -86,7 +86,7 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         const appEditId = await getOrCreateEdit(options)
 
         // Validate the given track
-        await validateSelectedTrack(appEditId, options)
+        await validateSelectedTracks(appEditId, options)
 
         // Upload artifacts to Google Play, and store their version codes
         const versionCodes = await uploadReleaseFiles(appEditId, options, releaseFiles)
@@ -115,11 +115,11 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         if (res.data.id) {
             core.info(`Successfully committed ${res.data.id}`);
 		
-	    core.setOutput("committedEditId", res.data.id);
-	    core.setOutput("commitedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
-		
-   	    core.exportVariable("COMMITED_EDIT_ID", res.data.id);  
-	    core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);  
+            core.setOutput("committedEditId", res.data.id);
+            core.setOutput("commitedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
+
+            core.exportVariable("COMMITED_EDIT_ID", res.data.id);
+            core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);
 		
             return res.data.id
         } else {
@@ -150,8 +150,13 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
     return res.downloadUrl
 }
 
-async function validateSelectedTrack(appEditId: string, options: EditOptions): Promise<void> {
-    core.info(`Validating track '${options.track}'`)
+async function validateSelectedTracks(appEditId: string, options: EditOptions): Promise<void> {
+    core.info(`Validating tracks: '${options.tracks.join(", ")}'`)
+
+    if (options.tracks[0] === 'internalsharing' && options.tracks.length > 1) {
+        throw Error(`${options.tracks[0]} is empty.`)
+    }
+
     const res = await androidPublisher.edits.tracks.list({
         auth: options.auth,
         editId: appEditId,
@@ -163,53 +168,64 @@ async function validateSelectedTrack(appEditId: string, options: EditOptions): P
         throw Error(res.statusText)
     }
 
-    const allTracks = res.data.tracks;
+    const playTracks = res.data.tracks?.map((t) => t.track);
     // Check whether we actually have any tracks
-    if (!allTracks) {
+    if (!playTracks) {
         throw Error('No tracks found, unable to validate track.')
     }
 
-    // Check whether the track is valid
-    if (allTracks.find(value => value.track == options.track) == undefined) {
-        const allTrackNames = allTracks.map((track) => { return track.track });
-        throw Error(`Track "${options.track}" could not be found. Available tracks are: ${allTrackNames.toString()}`);
+    // Check whether the tracks are valid
+    const invalidTracks: string[] = [];
+    for (const track of options.tracks) {
+        if (!playTracks.includes(track)) {
+            invalidTracks.push(track);
+        }
+    }
+
+    if (invalidTracks.length > 0) {
+        throw Error(`Tracks "${invalidTracks.join(", ")}" could not be found. Available tracks are: ${playTracks.toString()}`);
     }
 }
 
-async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track> {
+async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track[]> {
     const status = options.status
 
     core.debug(`Creating release for:`);
     core.debug(`edit=${appEditId}`)
-    core.debug(`track=${options.track}`)
+    core.debug(`tracks=${options.tracks.join(',')}`);
     if (options.userFraction) {
         core.debug(`userFraction=${options.userFraction}`)
     }
     core.debug(`status=${status}`)
     core.debug(`versionCodes=${versionCodes.toString()}`)
 
-    const res = await androidPublisher.edits.tracks
-        .update({
-            auth: options.auth,
-            editId: appEditId,
-            packageName: options.applicationId,
-            track: options.track,
-            requestBody: {
-                track: options.track,
-                releases: [
-                    {
-                        name: options.name,
-                        userFraction: options.userFraction,
-                        status: status,
-                        inAppUpdatePriority: options.inAppUpdatePriority,
-                        releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
-                        versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
-                    }
-                ]
-            }
-        });
+    const tracks: Track[] = [];
 
-    return res.data;
+    for (const track of options.tracks) {
+        const response = await androidPublisher.edits.tracks
+            .update({
+                auth: options.auth,
+                editId: appEditId,
+                packageName: options.applicationId,
+                track: track,
+                requestBody: {
+                    track: track,
+                    releases: [
+                        {
+                            name: options.name,
+                            userFraction: options.userFraction,
+                            status: status,
+                            inAppUpdatePriority: options.inAppUpdatePriority,
+                            releaseNotes: await readLocalizedReleaseNotes(options.whatsNewDir),
+                            versionCodes: versionCodes.filter(x => x != 0).map(x => x.toString())
+                        }
+                    ]
+                }
+            });
+        tracks.push(response.data);
+    }
+
+    return tracks;
 }
 
 async function uploadMappingFile(appEditId: string, versionCode: number, options: EditOptions) {

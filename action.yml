@@ -26,7 +26,11 @@ inputs:
   track:
     description: "The track in which you want to assign the uploaded app."
     default: 'production'
-    required: true
+    required: false
+  tracks:
+    description: "The track(s) in which you want to assign the uploaded app."
+    default: 'production'
+    required: false
   inAppUpdatePriority:
     description: "In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority. Defaults to 0."
     default: '0'
