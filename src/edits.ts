@@ -31,6 +31,7 @@ export interface EditOptions {
     status: string;
     changesNotSentForReview?: boolean;
     existingEditId?: string;
+    versionCodesToRetain?: number[]
 }
 
 export async function runUpload(
@@ -45,7 +46,8 @@ export async function runUpload(
     changesNotSentForReview: boolean,
     existingEditId: string | undefined,
     status: string,
-    validatedReleaseFiles: string[]
+    validatedReleaseFiles: string[],
+    versionCodesToRetain: number[] | undefined
 ) {
     const auth = new google.auth.GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -63,7 +65,8 @@ export async function runUpload(
         name: name,
         changesNotSentForReview: changesNotSentForReview,
         existingEditId: existingEditId,
-        status: status
+        status: status,
+        versionCodesToRetain: versionCodesToRetain
     }, validatedReleaseFiles);
 
     if (result) {
@@ -99,8 +102,10 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
             internalSharingDownloadUrls.push(url);
         }
 
+        const combinedVersionCodes = versionCodes.concat(options.versionCodesToRetain || [])
+
         // Add the uploaded artifacts to the Edit track
-        await addReleasesToTrack(appEditId, options, versionCodes);
+        await addReleasesToTrack(appEditId, options, combinedVersionCodes);
 
         // Commit the pending Edit
         core.info(`Committing the Edit`)
