@@ -98,13 +98,17 @@ distribution/
 ```
 
 ### I get the error "Precondition check failed"
+
 This error occurs when attempting to publish to the `production` track without first establishing the required app release progression through Google Play Console. For initial app deployments:
+
 1. Use the `internal` track for testing and validation
 2. Update your workflow configuration:
+
 ```yaml
 uses: r0adkll/upload-google-play@v1
 with:
   # ... other configurations ...
   track: internal
 ```
+
 The app can be promoted to `production` track only after completing the necessary release stages and store listing requirements in the Google Play Console.
