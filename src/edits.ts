@@ -154,7 +154,7 @@ async function validateSelectedTracks(appEditId: string, options: EditOptions): 
     core.info(`Validating tracks: '${options.tracks.join(", ")}'`)
 
     if (options.tracks[0] === 'internalsharing' && options.tracks.length > 1) {
-        throw Error(`${options.tracks[0]} is empty.`)
+        throw Error(`Can't upload to other tracks when internalsharing is requested.`)
     }
 
     const res = await androidPublisher.edits.tracks.list({
