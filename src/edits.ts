@@ -105,7 +105,7 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         const combinedVersionCodes = versionCodes.concat(options.versionCodesToRetain || [])
 
         // Add the uploaded artifacts to the Edit track
-        await addReleasesToTrack(appEditId, options, combinedVersionCodes);
+        await addReleasesToTracks(appEditId, options, combinedVersionCodes);
 
         // Commit the pending Edit
         core.info(`Committing the Edit`)
@@ -192,7 +192,7 @@ async function validateSelectedTracks(appEditId: string, options: EditOptions): 
     }
 }
 
-async function addReleasesToTrack(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track[]> {
+async function addReleasesToTracks(appEditId: string, options: EditOptions, versionCodes: number[]): Promise<Track[]> {
     const status = options.status
 
     core.debug(`Creating release for:`);
