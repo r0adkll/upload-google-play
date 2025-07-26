@@ -180,13 +180,7 @@ async function validateSelectedTracks(appEditId: string, options: EditOptions): 
     }
 
     // Check whether the tracks are valid
-    const invalidTracks: string[] = [];
-    for (const track of options.tracks) {
-        if (!playTracks.includes(track)) {
-            invalidTracks.push(track);
-        }
-    }
-
+    const invalidTracks = options.tracks.filter(track => !playTracks.includes(track));
     if (invalidTracks.length > 0) {
         throw Error(`Tracks "${invalidTracks.join(", ")}" could not be found. Available tracks are: ${playTracks.toString()}`);
     }
