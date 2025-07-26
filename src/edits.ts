@@ -176,13 +176,13 @@ async function validateSelectedTracks(appEditId: string, options: EditOptions): 
     const playTracks = res.data.tracks?.map((t) => t.track);
     // Check whether we actually have any tracks
     if (!playTracks) {
-        throw Error('No tracks found, unable to validate track.')
+        throw Error('No Google Play tracks found, unable to validate input tracks.')
     }
 
     // Check whether the tracks are valid
     const invalidTracks = options.tracks.filter(track => !playTracks.includes(track));
     if (invalidTracks.length > 0) {
-        throw Error(`Tracks "${invalidTracks.join(", ")}" could not be found. Available tracks are: ${playTracks.toString()}`);
+        throw Error(`Track(s) "${invalidTracks.join(", ")}" could not be found. Available tracks are: ${playTracks.toString()}`);
     }
 }
 
