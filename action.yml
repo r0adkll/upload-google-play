@@ -25,7 +25,6 @@ inputs:
     required: false
   track:
     description: "The track in which you want to assign the uploaded app."
-    default: 'production'
     required: false
   tracks:
     description: "The track(s) in which you want to assign the uploaded app."
