@@ -158,7 +158,7 @@ async function uploadInternalSharingRelease(options: EditOptions, releaseFile: s
 async function validateSelectedTracks(appEditId: string, options: EditOptions): Promise<void> {
     core.info(`Validating tracks: '${options.tracks.join(", ")}'`)
 
-    if (options.tracks[0] === 'internalsharing' && options.tracks.length > 1) {
+    if (options.tracks.includes('internalsharing') && options.tracks.length > 1) {
         throw Error(`Can't upload to other tracks when internalsharing is requested.`)
     }
 
