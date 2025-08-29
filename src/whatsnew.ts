@@ -11,32 +11,24 @@ export async function readLocalizedReleaseNotes(
   core.debug(`Executing readLocalizedReleaseNotes`);
 
   if (whatsNewDir != undefined && whatsNewDir.length > 0) {
-    const releaseNotes = fs
-      .readdirSync(whatsNewDir)
-      .filter((value) =>
-        /whatsnew-(?<local>([a-z]{2,3}(?:-[A-Z]{2})?|[a-z]{2}))(\.txt)?$/.test(
-          value
-        )
-      );
-
-    const pattern =
-      /whatsnew-(?<local>([a-z]{2,3}(?:-[A-Z]{2})?|[a-z]{2}))(\.txt)?$/;
-
+    const files = fs.readdirSync(whatsNewDir);
+    const pattern = /whatsnew-(?<local>[a-z]{2,3}(?:-[A-Z]{2})?)(\.txt)?$/;
     const localizedReleaseNotes: LocalizedText[] = [];
 
-    core.debug(`Found files: ${releaseNotes.toString()}`);
+    core.debug(`Scanning for whatsnew files in ${whatsNewDir}`);
 
-    for (const value of releaseNotes) {
-      const matches = value.match(pattern);
+    for (const file of files) {
+      const matches = file.match(pattern);
 
-      if (matches != null && matches.groups?.local) {
-        core.debug(`Matches for ${value} = ${matches.toString()}`);
+      if (matches?.groups?.local) {
         const lang = matches.groups.local;
-        const filePath = path.join(whatsNewDir, value);
+        const filePath = path.join(whatsNewDir, file);
         const content = (await readFile(filePath, "utf-8")).trim();
 
-        if (content != undefined) {
-          core.debug(`Found localized 'whatsnew-*-*' for Lang(${lang})`);
+        if (content) {
+          core.debug(
+            `Found localized 'whatsnew' for Lang(${lang}) in file ${file}`
+          );
           localizedReleaseNotes.push({
             language: lang,
             text: content,
