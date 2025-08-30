@@ -20,7 +20,7 @@ export async function readLocalizedReleaseNotes(
     for (const file of files) {
       const matches = file.match(pattern);
 
-      if (matches?.groups?.local) {
+      if (matches && matches.groups && matches.groups.local) {
         const lang = matches.groups.local;
         const filePath = path.join(whatsNewDir, file);
         const content = (await readFile(filePath, "utf-8")).trim();
