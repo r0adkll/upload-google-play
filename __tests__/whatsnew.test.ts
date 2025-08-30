@@ -3,38 +3,18 @@ import { readLocalizedReleaseNotes } from "../src/whatsnew";
 test("read localized whatsnew files", async () => {
   let texts = await readLocalizedReleaseNotes("./__tests__/whatsnew");
   expect(texts).toHaveLength(8);
-  expect(texts).toContainEqual({
-    language: "en-US",
-    text: "test_changelog_file",
-  });
-  expect(texts).toContainEqual({
-    language: "de-DE",
-    text: "test_changelog_file_german",
-  });
-  expect(texts).toContainEqual({
-    language: "ja-JP",
-    text: "test_changelog_file_japanese",
-  });
-  expect(texts).toContainEqual({
-    language: "ca",
-    text: "test_changelog_file_catalan",
-  });
-  expect(texts).toContainEqual({
-    language: "es-ES",
-    text: "test_changelog_file_spanish",
-  });
-  expect(texts).toContainEqual({
-    language: "et",
-    text: "test_changelog_file_estonian",
-  });
-  expect(texts).toContainEqual({
-    language: "fr-FR",
-    text: "test_changelog_file_french",
-  });
-  expect(texts).toContainEqual({
-    language: "it-IT",
-    text: "test_changelog_file_italian",
-  });
+
+  const expectedChangelogs = [
+    { language: "en-US", text: "test_changelog_file" },
+    { language: "de-DE", text: "test_changelog_file_german" },
+    { language: "ja-JP", text: "test_changelog_file_japanese" },
+    { language: "ca", text: "test_changelog_file_catalan" },
+    { language: "es-ES", text: "test_changelog_file_spanish" },
+    { language: "et", text: "test_changelog_file_estonian" },
+    { language: "fr-FR", text: "test_changelog_file_french" },
+    { language: "it-IT", text: "test_changelog_file_italian" },
+  ];
+  expect(texts).toEqual(expect.arrayContaining(expectedChangelogs));
 
   // Ensure no invalid language is included
   const languages = texts!.map((t) => t.language);
