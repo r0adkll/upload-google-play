@@ -35,20 +35,10 @@ test("read localized whatsnew files", async () => {
     language: "it-IT",
     text: "test_changelog_file_italian",
   });
-});
 
-test("read localized whatsnew files excludes invalid files", async () => {
-  let texts = await readLocalizedReleaseNotes("./__tests__/whatsnew");
-  expect(texts).toBeDefined();
-
-  if (texts) {
-    // Should still be 8, as whatsnew-invalid.txt should not be included
-    expect(texts).toHaveLength(8);
-
-    // Ensure no invalid language is included
-    const languages = texts.map((t) => t.language);
-    expect(languages).not.toContain("invalid");
-  }
+  // Ensure no invalid language is included
+  const languages = texts!.map((t) => t.language);
+  expect(languages).not.toContain("invalid");
 });
 
 test("read localized whatsnew files with undefined directory", async () => {
