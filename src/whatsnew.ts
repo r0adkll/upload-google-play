@@ -10,7 +10,7 @@ export async function readLocalizedReleaseNotes(
 ): Promise<LocalizedText[] | undefined> {
   core.debug(`Executing readLocalizedReleaseNotes`);
 
-  if (whatsNewDir != undefined && whatsNewDir.length > 0) {
+  if (whatsNewDir) {
     const files = await fs.promises.readdir(whatsNewDir);
     const pattern = /whatsnew-(?<local>[a-z]{2,3}(?:-[A-Z]{2})?)(\.txt)?$/;
     const localizedReleaseNotes: LocalizedText[] = [];
