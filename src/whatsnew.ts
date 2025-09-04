@@ -8,8 +8,8 @@ import { readFile } from 'fs/promises';
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
     core.debug(`Executing readLocalizedReleaseNotes`);
     if (whatsNewDir) {
-        const releaseNotes = await fs.promises.readdir(whatsNewDir)
-        const pattern = /whatsnew-([a-z]{2,3}(?:-[A-Z]{2})?)(\.txt)?$/;
+        const releaseNotes = await fs.promises.readdir(whatsNewDir);
+        const pattern = /^whatsnew-([a-z]{2,3}(?:-[A-Z]{2})?)(\.txt)?$/;
 
         const localizedReleaseNotes: LocalizedText[] = [];
 
