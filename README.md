@@ -96,3 +96,24 @@ distribution/
   ├─ whatsnew-de-DE
   └─ whatsnew-ja-JP
 ```
+
+### I get the error "Precondition check failed"
+This means some required state or store listing requirement hasn’t been met. Verify your track progression and edit state against the [Android Publisher API](https://developers.google.com/android-publisher) reference. Common causes include:
+
+#### First‑time production push
+You may have not yet promoted any AAB/APK through internal‑testing, alpha or beta before targeting `production`.  
+  
+Before you can target `production`, push at least one release through an earlier track. For example:
+
+```yaml
+uses: r0adkll/upload-google-play@v1
+with:
+  # ... other configurations ...
+  track: internal
+```
+
+#### Edit conflict
+If you start an edit draft, then make changes to the console (or another draft), committing the original draft will sometimes fail — always create a fresh edit after external changes.
+
+#### Concurrent edits
+Multiple clients may open edits in parallel, but once one is committed all others become stale and may trigger this error.
