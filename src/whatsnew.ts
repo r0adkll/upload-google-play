@@ -7,24 +7,23 @@ import { readFile } from 'fs/promises';
 
 export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined): Promise<LocalizedText[] | undefined> {
     core.debug(`Executing readLocalizedReleaseNotes`);
-    if (whatsNewDir != undefined && whatsNewDir.length > 0) {
-        const releaseNotes = fs.readdirSync(whatsNewDir)
-            .filter(value => /whatsnew-((.*-.*)|(.*))\b/.test(value));
-        const pattern = /whatsnew-(?<local>(.*-.*)|(.*))/;
+    if (whatsNewDir) {
+        const releaseNotes = await fs.promises.readdir(whatsNewDir);
+        const pattern = /^whatsnew-([a-z]{2,3}(?:-[A-Z]{2})?)(\.txt)?$/;
 
         const localizedReleaseNotes: LocalizedText[] = [];
 
-        core.debug(`Found files: ${releaseNotes.toString()}`);
+        core.debug(`Scanning for whatsnew files in ${whatsNewDir}`);
         for (const value of releaseNotes) {
             const matches = value.match(pattern);
-            if (matches != null && matches.length == 4) {
+            if (matches && matches[1]) {
                 core.debug(`Matches for ${value} = ${matches.toString()}`);
                 const lang = matches[1];
                 const filePath = path.join(whatsNewDir, value);
-                const content = await readFile(filePath, 'utf-8');
+                const content = (await readFile(filePath, 'utf-8')).trim();
 
-                if (content != undefined) {
-                    core.debug(`Found localized 'whatsnew-*-*' for Lang(${lang})`);
+                if (content) {
+                    core.debug(`Found localized 'whatsnew' for Lang(${lang}) in file ${value}`);
                     localizedReleaseNotes.push(
                         {
                             language: lang,
