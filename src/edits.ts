@@ -1,5 +1,6 @@
 import * as core from '@actions/core';
 import * as fs from "fs";
+import { ChangesNotSentForReview, GaxiosErrorLike } from './types';
 import { readFileSync, lstatSync } from "fs";
 import JSZip from 'jszip';
 import path = require('path');
@@ -29,7 +30,7 @@ export interface EditOptions {
     debugSymbols?: string;
     name?: string;
     status: string;
-    changesNotSentForReview?: boolean;
+    changesNotSentForReview?: ChangesNotSentForReview;
     existingEditId?: string;
     versionCodesToRetain?: number[]
 }
@@ -43,7 +44,7 @@ export async function runUpload(
     mappingFile: string | undefined,
     debugSymbols: string | undefined,
     name: string | undefined,
-    changesNotSentForReview: boolean,
+    changesNotSentForReview: ChangesNotSentForReview,
     existingEditId: string | undefined,
     status: string,
     validatedReleaseFiles: string[],
@@ -72,6 +73,50 @@ export async function runUpload(
     if (result) {
         console.log(`Finished uploading to the Play Store: ${result}`)
     }
+}
+
+/**
+ * Check if the error is the specific Google Play API error requiring
+ * changesNotSentForReview=true.
+ * 
+ * The error message from Google Play API is:
+ * "Changes cannot be sent for review automatically. Please set the query 
+ *  parameter changesNotSentForReview to true."
+ * 
+ * @param error - The error object from the API call (typically a GaxiosError)
+ * @returns true if this is the specific error that can be handled by retry
+ * 
+ * @see https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit
+ */
+function isChangesNotSentForReviewRequired(error: unknown): boolean {
+    const gaxiosError = error as GaxiosErrorLike;
+    
+    // Try to get error message from standard GaxiosError structure
+    const apiMessage = gaxiosError?.response?.data?.error?.message;
+    const fallbackMessage = gaxiosError?.message;
+    const message = apiMessage ?? fallbackMessage ?? String(error);
+    
+    const normalizedMessage = message.toLowerCase();
+    
+    // Primary check: the exact error message from Google Play API
+    if (normalizedMessage.includes("changes cannot be sent for review automatically")) {
+        return true;
+    }
+    
+    // Secondary check: error mentions the parameter name in review context
+    if (normalizedMessage.includes("changesnotsentforreview") && 
+        normalizedMessage.includes("review")) {
+        return true;
+    }
+    
+    // Check HTTP status code - this error is a 400 Bad Request
+    const httpStatus = gaxiosError?.response?.status;
+    if (httpStatus === 400 && normalizedMessage.includes("review")) {
+        core.debug(`Detected potential review error with HTTP 400: ${message}`);
+        return true;
+    }
+    
+    return false;
 }
 
 async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): Promise<string | void> {
@@ -108,28 +153,113 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         await addReleasesToTrack(appEditId, options, combinedVersionCodes);
 
         // Commit the pending Edit
-        core.info(`Committing the Edit`)
-        const res = await androidPublisher.edits.commit({
-            auth: options.auth,
-            editId: appEditId,
-            packageName: options.applicationId,
-            changesNotSentForReview: options.changesNotSentForReview
-        });
+        core.info(`Committing the Edit`);
 
-        // Simple check to see whether commit was successful
-        if (res.data.id) {
-            core.info(`Successfully committed ${res.data.id}`);
-		
-	    core.setOutput("committedEditId", res.data.id);
-	    core.setOutput("commitedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
-		
-   	    core.exportVariable("COMMITED_EDIT_ID", res.data.id);  
-	    core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);  
-		
-            return res.data.id
+        if (options.changesNotSentForReview === "auto") {
+            // AUTO mode: Try without flag first, retry with flag if needed
+            try {
+                core.debug("Attempting commit with changesNotSentForReview=false");
+                const res = await androidPublisher.edits.commit({
+                    auth: options.auth,
+                    editId: appEditId,
+                    packageName: options.applicationId,
+                    changesNotSentForReview: false
+                });
+
+                if (res.data.id) {
+                    core.info(`Successfully committed ${res.data.id}`);
+                    core.setOutput("committedEditId", res.data.id);
+                    core.setOutput("committedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
+                    core.setOutput("changesNotSentForReviewApplied", "false");
+                    
+                    // Export with correct names
+                    core.exportVariable("COMMITTED_EDIT_ID", res.data.id);
+                    core.exportVariable("COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS", res.data.expiryTimeSeconds);
+                    core.exportVariable("CHANGES_NOT_SENT_FOR_REVIEW_APPLIED", "false");
+                    
+                    // Backward compatible exports (keep old typo'd names)
+                    core.exportVariable("COMMITED_EDIT_ID", res.data.id);
+                    core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);
+                    
+                    return res.data.id;
+                } else {
+                    core.setFailed(`Error ${res.status}: ${res.statusText}`);
+                    return Promise.reject(res.status);
+                }
+            } catch (error: any) {
+                // Check if this is the specific "changes not sent for review" error
+                if (!isChangesNotSentForReviewRequired(error)) {
+                    // Different error - rethrow
+                    throw error;
+                }
+
+                // This is the error we can handle - retry with flag
+                core.warning(
+                    "⚠️  Google Play blocked automatic 'Send for review'. " +
+                    "Retrying commit with changesNotSentForReview=true.\n" +
+                    "⚠️  You MUST manually click 'Send for review' in the Play Console " +
+                    "to publish this release."
+                );
+
+                core.debug("Retrying commit with changesNotSentForReview=true");
+                const retryRes = await androidPublisher.edits.commit({
+                    auth: options.auth,
+                    editId: appEditId,
+                    packageName: options.applicationId,
+                    changesNotSentForReview: true
+                });
+
+                if (retryRes.data.id) {
+                    core.info(`Successfully committed ${retryRes.data.id} (with manual review required)`);
+                    core.setOutput("committedEditId", retryRes.data.id);
+                    core.setOutput("committedEditIdExpiryTimeSeconds", retryRes.data.expiryTimeSeconds);
+                    core.setOutput("changesNotSentForReviewApplied", "true");
+                    
+                    // Export with correct names
+                    core.exportVariable("COMMITTED_EDIT_ID", retryRes.data.id);
+                    core.exportVariable("COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS", retryRes.data.expiryTimeSeconds);
+                    core.exportVariable("CHANGES_NOT_SENT_FOR_REVIEW_APPLIED", "true");
+                    
+                    // Backward compatible exports (keep old typo'd names)
+                    core.exportVariable("COMMITED_EDIT_ID", retryRes.data.id);
+                    core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", retryRes.data.expiryTimeSeconds);
+                    
+                    return retryRes.data.id;
+                } else {
+                    core.setFailed(`Error ${retryRes.status}: ${retryRes.statusText}`);
+                    return Promise.reject(retryRes.status);
+                }
+            }
         } else {
-            core.setFailed(`Error ${res.status}: ${res.statusText}`);
-            return Promise.reject(res.status);
+            // LEGACY mode: Use the boolean value directly
+            const boolValue = options.changesNotSentForReview === true;
+            const res = await androidPublisher.edits.commit({
+                auth: options.auth,
+                editId: appEditId,
+                packageName: options.applicationId,
+                changesNotSentForReview: boolValue
+            });
+
+            if (res.data.id) {
+                core.info(`Successfully committed ${res.data.id}`);
+                core.setOutput("committedEditId", res.data.id);
+                core.setOutput("committedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
+                core.setOutput("changesNotSentForReviewApplied", String(boolValue));
+                
+                // Export with correct names
+                core.exportVariable("COMMITTED_EDIT_ID", res.data.id);
+                core.exportVariable("COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS", res.data.expiryTimeSeconds);
+                core.exportVariable("CHANGES_NOT_SENT_FOR_REVIEW_APPLIED", String(boolValue));
+                
+                // Backward compatible exports (keep old typo'd names)
+                core.exportVariable("COMMITED_EDIT_ID", res.data.id);
+                core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);
+                
+                return res.data.id;
+            } else {
+                core.setFailed(`Error ${res.status}: ${res.statusText}`);
+                return Promise.reject(res.status);
+            }
         }
     }
 

@@ -4,6 +4,35 @@ import { runUpload } from "./edits"
 import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
 import { unlink, writeFile } from 'fs/promises'
 import pTimeout from 'p-timeout'
+import { ChangesNotSentForReview } from './types'
+
+// Re-export for backward compatibility
+export { ChangesNotSentForReview } from './types'
+
+/**
+ * Parse the changesNotSentForReview input value.
+ * 
+ * @param raw - The raw string value from the action input
+ * @returns Parsed value: `true`, `false`, or `"auto"`
+ * @throws Error if the value is not valid
+ * 
+ * @example
+ * parseChangesNotSentForReview("true")  // returns true
+ * parseChangesNotSentForReview("auto")  // returns "auto"
+ * parseChangesNotSentForReview("yes")   // throws Error
+ */
+export function parseChangesNotSentForReview(raw: string): ChangesNotSentForReview {
+    const normalized = (raw || "false").trim().toLowerCase();
+    
+    if (normalized === "auto") return "auto";
+    if (normalized === "true") return true;
+    if (normalized === "false" || normalized === "") return false;
+    
+    throw new Error(
+        `Invalid changesNotSentForReview value: "${raw}". ` +
+        `Expected "true", "false", or "auto".`
+    );
+}
 
 export async function run() {
     try {
@@ -22,7 +51,8 @@ export async function run() {
         const whatsNewDir = core.getInput('whatsNewDirectory', { required: false });
         const mappingFile = core.getInput('mappingFile', { required: false });
         const debugSymbols = core.getInput('debugSymbols', { required: false });
-        const changesNotSentForReview = core.getInput('changesNotSentForReview', { required: false }) == 'true';
+        const changesNotSentForReviewInput = core.getInput('changesNotSentForReview', { required: false });
+        const changesNotSentForReview = parseChangesNotSentForReview(changesNotSentForReviewInput);
         const existingEditId = core.getInput('existingEditId');
         const versionCodesToRetain = core.getInput('versionCodesToRetain', { required: false })
             ?.split(',')
