@@ -107,3 +107,33 @@ test("correct inputs for draft rollout", async () => {
         })
     await expectRunInitiatesUpload(extraOptions)
 })
+
+test("accepts changesNotSentForReview='auto'", async () => {
+    const options = RunOptions.create()
+        .setInputs({
+            serviceAccountJsonPlainText: "{}",
+            packageName: "com.package.name",
+            releaseFiles: "./__tests__/releasefiles/*.aab",
+            track: "production",
+            changesNotSentForReview: "auto",
+        })
+    await expectRunInitiatesUpload(options)
+})
+
+test("rejects invalid changesNotSentForReview values", async () => {
+    const options = RunOptions.create()
+        .setInputs({
+            serviceAccountJsonPlainText: "{}",
+            packageName: "com.package.name",
+            releaseFiles: "./__tests__/releasefiles/*.aab",
+            track: "production",
+            changesNotSentForReview: "invalid",
+        })
+    
+    const result = await target.run(options)
+    expect(result.commands.errors.length).toBeGreaterThan(0)
+    expect(result.commands.errors.some(e =>
+        e.includes('Invalid changesNotSentForReview')
+    )).toBe(true)
+})
+
