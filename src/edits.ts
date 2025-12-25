@@ -91,8 +91,8 @@ export async function runUpload(
 function isChangesNotSentForReviewRequired(error: GaxiosErrorLike): boolean {
     
     // Try to get error message from standard GaxiosError structure
-    const apiMessage = gaxiosError?.response?.data?.error?.message;
-    const fallbackMessage = gaxiosError?.message;
+    const apiMessage = error?.response?.data?.error?.message;
+    const fallbackMessage = error?.message;
     const message = apiMessage ?? fallbackMessage ?? String(error);
     
     const normalizedMessage = message.toLowerCase();
@@ -109,7 +109,7 @@ function isChangesNotSentForReviewRequired(error: GaxiosErrorLike): boolean {
     }
     
     // Check HTTP status code - this error is a 400 Bad Request
-    const httpStatus = gaxiosError?.response?.status;
+    const httpStatus = error?.response?.status;
     if (httpStatus === 400 && normalizedMessage.includes("review")) {
         core.debug(`Detected potential review error with HTTP 400: ${message}`);
         return true;
