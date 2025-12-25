@@ -1,9 +1,9 @@
-name: "Upload Android Release to Play Store"
+name: 'Upload Android Release to Play Store'
 description: "An action to upload a signed Android release (.apk or .aab) to the Google Play Store Developer Console"
-author: "r0adkll"
+author: 'r0adkll'
 branding:
-  icon: "truck"
-  color: "orange"
+  icon: 'truck'
+  color: 'orange'
 inputs:
   serviceAccountJson:
     description: "The service account json private key file to authorize the upload request"
@@ -25,11 +25,11 @@ inputs:
     required: false
   track:
     description: "The track in which you want to assign the uploaded app."
-    default: "production"
+    default: 'production'
     required: true
   inAppUpdatePriority:
     description: "In-app update priority of the release. All newly added APKs in the release will be considered at this priority. Can take values in the range [0, 5], with 5 the highest priority. Defaults to 0."
-    default: "0"
+    default: '0'
     required: false
   userFraction:
     description: "Portion of users who should get the staged version of the app. Accepts values between 0.0 and 1.0 (exclusive-exclusive)."
@@ -37,7 +37,7 @@ inputs:
   status:
     description: "Release status. This can be set to 'draft' to complete the release at some other time."
     required: true
-    default: "completed"
+    default: 'completed'
   whatsNewDirectory:
     description: "The directory of localized whats new files"
     required: false
@@ -48,8 +48,8 @@ inputs:
     description: "The native-debug-symbols.zip file or folder that contains your debug symbols"
     required: false
   changesNotSentForReview:
-    description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Set to 'auto' to automatically retry with this flag if Google Play requires it. Defaults to 'false'"
-    default: "false"
+    description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Set to 'auto' to automatically retry with this flag if Google Play requires it"
+    default: 'false'
     required: false
   existingEditId:
     description: "The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit"
