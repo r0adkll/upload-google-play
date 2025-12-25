@@ -88,8 +88,7 @@ export async function runUpload(
  * 
  * @see https://developers.google.com/android-publisher/api-ref/rest/v3/edits/commit
  */
-function isChangesNotSentForReviewRequired(error: unknown): boolean {
-    const gaxiosError = error as GaxiosErrorLike;
+function isChangesNotSentForReviewRequired(error: GaxiosErrorLike): boolean {
     
     // Try to get error message from standard GaxiosError structure
     const apiMessage = gaxiosError?.response?.data?.error?.message;
