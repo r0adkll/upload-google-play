@@ -54,3 +54,11 @@ export async function validateReleaseFiles(releaseFiles: string[] | undefined): 
         return files
     }
 }
+
+export async function validateTracks(tracks: string[] | undefined): Promise<string[]> {
+    if (!tracks) {
+        return Promise.reject(new Error(`You must provide 'tracks' in your configuration`))
+    }
+
+    return tracks
+}

@@ -1,7 +1,13 @@
 import * as core from '@actions/core'
 import * as fs from "fs"
 import { runUpload } from "./edits"
-import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateUserFraction } from "./input-validation"
+import {
+    validateInAppUpdatePriority,
+    validateReleaseFiles,
+    validateStatus,
+    validateTracks,
+    validateUserFraction
+} from "./input-validation"
 import { unlink, writeFile } from 'fs/promises'
 import pTimeout from 'p-timeout'
 
@@ -15,7 +21,10 @@ export async function run() {
             ?.split(',')
             ?.filter(x => x !== '');
         const releaseName = core.getInput('releaseName', { required: false });
-        const track = core.getInput('track', { required: true });
+        const track = core.getInput('track', { required: false });
+        const tracks = core.getInput('tracks', { required: false })
+            ?.split(',')
+            ?.filter(x => x !== '');
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false })
         const status = core.getInput('status', { required: false });
@@ -59,6 +68,11 @@ export async function run() {
         }
         const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
 
+        if (track) {
+            core.warning(`WARNING!! 'track' is deprecated and will be removed in a future release. Please migrate to 'tracks'`)
+        }
+        const validatedTracks: string[] = await validateTracks(tracks ?? [track])
+
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.warning(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);
         }
@@ -74,7 +88,7 @@ export async function run() {
         await pTimeout(
             runUpload(
                 packageName,
-                track,
+                validatedTracks,
                 inAppUpdatePriorityInt,
                 userFractionFloat,
                 whatsNewDir,
