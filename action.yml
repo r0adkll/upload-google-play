@@ -37,7 +37,7 @@ inputs:
   status:
     description: "Release status. This can be set to 'draft' to complete the release at some other time."
     required: true
-    default: "completed"
+    default: 'completed'
   whatsNewDirectory:
     description: "The directory of localized whats new files"
     required: false
@@ -48,7 +48,7 @@ inputs:
     description: "The native-debug-symbols.zip file or folder that contains your debug symbols"
     required: false
   changesNotSentForReview:
-    description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console"
+    description: "Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Set to 'auto' to automatically retry with this flag if Google Play requires it"
     default: 'false'
     required: false
   existingEditId:
@@ -60,6 +60,14 @@ inputs:
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
+  internalSharingDownloadUrls:
+    description: "A JSON list containing the download urls for every release file uploaded using the 'internalsharing' track"
+  committedEditId:
+    description: "The unique identifier of the committed edit"
+  committedEditIdExpiryTimeSeconds:
+    description: "Time in seconds until the committed edit expires"
+  changesNotSentForReviewApplied:
+    description: "Whether the release was committed with changesNotSentForReview=true. 'true' means manual review is required in Play Console"
 runs:
-  using: 'node20'
-  main: 'lib/index.js'
+  using: "node20"
+  main: "lib/index.js"
