@@ -17,7 +17,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | whatsNewDirectory | The directory of localized "whats new" files to upload as the release notes. The files contained in the `whatsNewDirectory` MUST use the pattern `whatsnew-<LOCALE>` where `LOCALE` is using the [`BCP 47`](https://tools.ietf.org/html/bcp47) format | A path to a valid `whatsNewDirectory` | false |
 | mappingFile | The mapping.txt file used to de-obfuscate your stack traces from crash reports | A path to a valid `mapping.txt` file | false |
 | debugSymbols | The native-debug-symbols.zip file or folder that contains your debug symbols | A path to a valid `native-debug-symbols.zip file` file or a folder | false |
-| changesNotSentForReview | Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Defaults to `false` | `true` or `false` | `false` |
+| changesNotSentForReview | Indicates that the changes in this edit will not be reviewed until they are explicitly sent for review from the Google Play Console. Set to `auto` to automatically retry with this flag if Google Play requires it. Defaults to `false` | `true`, `false`, or `auto` | `false` |
 | serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | true (or serviceAccountJsonPlainText) |
 | existingEditId | The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit | A valid, unpublished Edit ID | false |
 | versionCodesToRetain | Version codes to retain from previous releases. | Comma-separated version codes. | false |
@@ -29,8 +29,9 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | --- | --- | --- |
 | internalSharingDownloadUrls | INTERNAL_SHARING_DOWNLOAD_URLS | A JSON list containing the download urls for every release file uploaded using the `internalsharing` track |
 | internalSharingDownloadUrl | INTERNAL_SHARING_DOWNLOAD_URL | The download url for the last release file uploaded using the `internalsharing` track |
-committedEditId | COMMITTED_EDIT_ID | The unique identifier of the committed edit. |
-committedEditIdExpiryTimeSeconds | COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS | Time in seconds until the committed edit expires. |
+| committedEditId | COMMITTED_EDIT_ID | The unique identifier of the committed edit |
+| committedEditIdExpiryTimeSeconds | COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS | Time in seconds until the committed edit expires |
+| changesNotSentForReviewApplied | CHANGES_NOT_SENT_FOR_REVIEW_APPLIED | Whether the release was committed with changesNotSentForReview=true. `"true"` means manual review is required in Play Console |
  
 
 ## Example usage
@@ -50,6 +51,29 @@ with:
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
+```
+
+## Example: Using auto-retry for changesNotSentForReview
+
+This example uses `auto` mode to intelligently handle Google Play's review requirements:
+
+```yaml
+- name: Upload to Play Store
+  id: upload
+  uses: r0adkll/upload-google-play@v1
+  with:
+    serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+    packageName: com.example.MyApp
+    releaseFiles: app/build/outputs/bundle/release/app-release.aab
+    track: production
+    changesNotSentForReview: auto
+
+# Optional: Send notification if manual review is required
+- name: Check if manual review needed
+  if: steps.upload.outputs.changesNotSentForReviewApplied == 'true'
+  run: |
+    echo "⚠️  Manual review required in Google Play Console"
+    # Add Slack/email notification here
 ```
 
 ## Configure access via service account
