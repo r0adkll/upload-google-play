@@ -19,12 +19,12 @@ export async function run() {
         const releaseFile = core.getInput('releaseFile', { required: false });
         const releaseFiles = core.getInput('releaseFiles', { required: false })
             ?.split(',')
-            ?.filter(x => x !== '');
+            ?.filter(x => x !== '') ?? [];
         const releaseName = core.getInput('releaseName', { required: false });
         const track = core.getInput('track', { required: false });
         const tracks = core.getInput('tracks', { required: false })
             ?.split(',')
-            ?.filter(x => x !== '');
+            ?.filter(x => x !== '') ?? [];
         const inAppUpdatePriority = core.getInput('inAppUpdatePriority', { required: false });
         const userFraction = core.getInput('userFraction', { required: false })
         const status = core.getInput('status', { required: false });
@@ -62,16 +62,9 @@ export async function run() {
         }
         await validateInAppUpdatePriority(inAppUpdatePriorityInt)
 
-        // Check release files while maintaining backward compatibility
-        if (releaseFile) {
-            core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
-        }
-        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFiles ?? [releaseFile])
+        const validatedReleaseFiles: string[] = await validateReleaseFiles(releaseFile, releaseFiles)
 
-        if (track) {
-            core.warning(`WARNING!! 'track' is deprecated and will be removed in a future release. Please migrate to 'tracks'`)
-        }
-        const validatedTracks: string[] = await validateTracks(tracks ?? [track])
+        const validatedTracks: string[] = await validateTracks(track, tracks)
 
         if (whatsNewDir != undefined && whatsNewDir.length > 0 && !fs.existsSync(whatsNewDir)) {
             core.warning(`Unable to find 'whatsnew' directory @ ${whatsNewDir}`);

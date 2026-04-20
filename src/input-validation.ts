@@ -1,4 +1,5 @@
 import fg from "fast-glob";
+import * as core from "@actions/core";
 
 export async function validateUserFraction(userFraction: number | undefined): Promise<void> {
     if (userFraction != undefined) {
@@ -43,22 +44,34 @@ export async function validateInAppUpdatePriority(inAppUpdatePriority: number | 
     }
 }
 
-export async function validateReleaseFiles(releaseFiles: string[] | undefined): Promise<string[]> {
-    if (!releaseFiles) {
-        return Promise.reject(new Error(`You must provide 'releaseFiles' in your configuration`))
-    } else {
-        const files = await fg(releaseFiles)
-        if (!files.length) {
-            return Promise.reject(new Error(`Unable to find any release file matching ${releaseFiles.join(',')}`))
-        }
-        return files
+export async function validateReleaseFiles(releaseFile: string | undefined, releaseFiles: string[]): Promise<string[]> {
+    if (releaseFile && releaseFiles.length > 0) {
+        return Promise.reject(new Error(`Cannot set both 'releaseFile' and 'releaseFiles'. 'releaseFile' is deprecated — please migrate fully to 'releaseFiles'.`))
     }
+    if (releaseFile) {
+        core.warning(`WARNING!! 'releaseFile' is deprecated and will be removed in a future release. Please migrate to 'releaseFiles'`)
+    }
+    const patterns = releaseFiles.length > 0 ? releaseFiles : (releaseFile ? [releaseFile] : [])
+    if (patterns.length === 0) {
+        return Promise.reject(new Error(`You must provide 'releaseFiles' in your configuration`))
+    }
+    const files = await fg(patterns)
+    if (!files.length) {
+        return Promise.reject(new Error(`Unable to find any release file matching ${patterns.join(',')}`))
+    }
+    return files
 }
 
-export async function validateTracks(tracks: string[] | undefined): Promise<string[]> {
-    if (!tracks) {
-        return Promise.reject(new Error(`You must provide 'tracks' in your configuration`))
+export async function validateTracks(track: string | undefined, tracks: string[]): Promise<string[]> {
+    if (track && tracks.length > 0) {
+        return Promise.reject(new Error(`Cannot set both 'track' and 'tracks'. 'track' is deprecated — please migrate fully to 'tracks'.`))
     }
-
-    return tracks
+    if (track) {
+        core.warning(`WARNING!! 'track' is deprecated and will be removed in a future release. Please migrate to 'tracks'`)
+        return [track]
+    }
+    if (tracks.length > 0) {
+        return tracks
+    }
+    return ['production']
 }
