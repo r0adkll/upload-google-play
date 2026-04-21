@@ -1,0 +1,47 @@
+# Posts the diff coverage report as a PR comment.
+#
+# Runs via workflow_run so it executes in the base repo's context with a
+# writable GITHUB_TOKEN - which pull_request runs from forks do not get.
+# This workflow never checks out PR code; it only downloads the report
+# artifact uploaded by pr-validation.yml and posts it.
+
+name: PR Coverage Comment
+
+on:
+  workflow_run:
+    workflows: ["PR Validation"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+  pull-requests: write
+  actions: read
+
+jobs:
+  comment:
+    if: github.event.workflow_run.event == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download diff coverage artifact
+        id: download
+        continue-on-error: true
+        uses: actions/download-artifact@v4
+        with:
+          name: diff-coverage
+          path: ./diff-coverage
+          run-id: ${{ github.event.workflow_run.id }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Read PR number
+        if: steps.download.outcome == 'success'
+        id: pr
+        run: echo "number=$(cat ./diff-coverage/pr-number.txt)" >> "$GITHUB_OUTPUT"
+
+      - name: Post diff coverage comment
+        if: steps.download.outcome == 'success'
+        uses: marocchino/sticky-pull-request-comment@v2
+        with:
+          header: diff-coverage
+          number: ${{ steps.pr.outputs.number }}
+          path: ./diff-coverage/diff-coverage.md

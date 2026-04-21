@@ -13,7 +13,6 @@ on:
 
 permissions:
   contents: read
-  pull-requests: write
 
 jobs:
   build:
@@ -64,8 +63,9 @@ jobs:
         run: pip install diff-cover
 
       # Computes coverage of only the lines changed in this PR's diff and
-      # writes a markdown report. `continue-on-error` lets us post the comment
-      # before failing so reviewers see the details even when the gate trips.
+      # writes a markdown report. `continue-on-error` lets us still upload
+      # the report artifact below so the comment workflow can post it even
+      # when the gate trips.
       - name: Generate diff coverage report
         if: github.event_name == 'pull_request'
         id: diff-cover
@@ -76,12 +76,21 @@ jobs:
             --fail-under=80 \
             --format markdown:diff-coverage.md
 
-      - name: Post diff coverage comment
+      # For fork PRs the GITHUB_TOKEN on pull_request runs is read-only, so we
+      # can't post a comment here. Upload the report + PR number as an artifact
+      # and let pr-coverage-comment.yml (workflow_run) post from the base repo.
+      - name: Save PR number
         if: github.event_name == 'pull_request'
-        uses: marocchino/sticky-pull-request-comment@v2
+        run: echo "${{ github.event.pull_request.number }}" > pr-number.txt
+
+      - name: Upload diff coverage report
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
         with:
-          header: diff-coverage
-          path: ./diff-coverage.md
+          name: diff-coverage
+          path: |
+            diff-coverage.md
+            pr-number.txt
 
       - name: Enforce diff coverage threshold
         if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'failure'
