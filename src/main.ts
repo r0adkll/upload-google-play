@@ -78,8 +78,6 @@ export async function run() {
             core.warning(`Unable to find 'debugSymbols' @ ${debugSymbols}`);
         }
 
-        core.debug(`Testing code coverage, pls delete me!`);
-
         await pTimeout(
             runUpload(
                 packageName,
