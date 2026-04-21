@@ -48,7 +48,7 @@ jobs:
         run: exit 1
 
       - name: Run Tests with Coverage
-        run: npm run test:coverage
+        run: npm run test:coverage | tee ./coverage.txt
 
       - name: Post Coverage Comment
         if: github.event_name == 'pull_request'
@@ -56,3 +56,4 @@ jobs:
         with:
           title: Code Coverage
           coverage-summary-path: ./coverage/coverage-summary.json
+          coverage-path: ./coverage.txt
