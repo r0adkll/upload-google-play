@@ -47,20 +47,44 @@ jobs:
         if: steps.verify-built-lib.outputs.files_changed == 'true'
         run: exit 1
 
-      - name: Run Tests with Coverage
-        run: npm run test:coverage | tee ./coverage.txt
+      # On push / workflow_dispatch there is no PR diff, just run the tests
+      - name: Run Tests
+        if: github.event_name != 'pull_request'
+        run: npm test
+
+      # On PRs, figure out which source files changed so we can scope coverage
+      # collection (and the threshold gate) to just those files
+      - name: Get changed source files
+        if: github.event_name == 'pull_request'
+        id: changed
+        uses: tj-actions/changed-files@v45
+        with:
+          files: src/**/*.ts
+          separator: ','
+
+      - name: Run Tests with Coverage (changed files)
+        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true'
+        env:
+          CHANGED: ${{ steps.changed.outputs.all_changed_files }}
+        run: |
+          COVERAGE_ARGS=$(echo "$CHANGED" | tr ',' '\n' | sed 's|^|--collectCoverageFrom=|' | tr '\n' ' ')
+          npx jest --coverage $COVERAGE_ARGS | tee ./coverage.txt
+
+      - name: Run Tests (no source changes)
+        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed != 'true'
+        run: npm test
 
       - name: Post Coverage Comment
         id: coverage
-        if: github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true'
         uses: MishaKav/jest-coverage-comment@v1.0.29
         with:
-          title: Code Coverage
+          title: Code Coverage (changed files)
           coverage-summary-path: ./coverage/coverage-summary.json
           coverage-path: ./coverage.txt
 
       - name: Fail if coverage too low
-        if: ${{ steps.coverage.outputs.coverage < 80 }}
+        if: ${{ github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true' && steps.coverage.outputs.coverage < 80 }}
         run: |
-          echo "Coverage is below 80%!"
+          echo "Coverage for changed files is below 80%!"
           exit 1
