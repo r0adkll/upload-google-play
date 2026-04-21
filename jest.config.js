@@ -7,5 +7,10 @@ module.exports = {
   transform: {
     '^.+\\.ts$': 'ts-jest'
   },
-  verbose: true
+  verbose: true,
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    '!src/**/*.d.ts'
+  ],
+  coverageReporters: ['text', 'text-summary', 'json-summary', 'lcov']
 }
