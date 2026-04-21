@@ -58,7 +58,6 @@ jobs:
           title: Code Coverage
           coverage-summary-path: ./coverage/coverage-summary.json
           coverage-path: ./coverage.txt
-          report-only-changed-files: true
 
       - name: Fail if coverage too low
         if: ${{ steps.coverage.outputs.coverage < 80 }}
