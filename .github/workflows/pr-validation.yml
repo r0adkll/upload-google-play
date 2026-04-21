@@ -44,16 +44,24 @@ jobs:
 
       # If it did change, the authro forgot to build. Fail the action
       - name: Verify Build Updated
-        if: steps.verify-changed-files.outputs.files_changed == 'true'
+        if: steps.verify-built-lib.outputs.files_changed == 'true'
         run: exit 1
 
       - name: Run Tests with Coverage
         run: npm run test:coverage | tee ./coverage.txt
 
       - name: Post Coverage Comment
+        id: coverage
         if: github.event_name == 'pull_request'
         uses: MishaKav/jest-coverage-comment@v1.0.29
         with:
           title: Code Coverage
           coverage-summary-path: ./coverage/coverage-summary.json
           coverage-path: ./coverage.txt
+          report-only-changed-files: true
+
+      - name: Fail if coverage too low
+        if: ${{ steps.coverage.outputs.coverage < 80 }}
+        run: |
+          echo "Coverage is below 80%!"
+          exit 1
