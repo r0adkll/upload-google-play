@@ -21,6 +21,9 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          # diff-cover needs full history to compare against the PR base
+          fetch-depth: 0
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -47,44 +50,41 @@ jobs:
         if: steps.verify-built-lib.outputs.files_changed == 'true'
         run: exit 1
 
-      # On push / workflow_dispatch there is no PR diff, just run the tests
-      - name: Run Tests
-        if: github.event_name != 'pull_request'
-        run: npm test
+      - name: Run Tests with Coverage
+        run: npm run test:coverage
 
-      # On PRs, figure out which source files changed so we can scope coverage
-      # collection (and the threshold gate) to just those files
-      - name: Get changed source files
+      - name: Set up Python
         if: github.event_name == 'pull_request'
-        id: changed
-        uses: tj-actions/changed-files@v45
+        uses: actions/setup-python@v5
         with:
-          files: src/**/*.ts
-          separator: ','
+          python-version: '3.x'
 
-      - name: Run Tests with Coverage (changed files)
-        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true'
-        env:
-          CHANGED: ${{ steps.changed.outputs.all_changed_files }}
+      - name: Install diff-cover
+        if: github.event_name == 'pull_request'
+        run: pip install diff-cover
+
+      # Computes coverage of only the lines changed in this PR's diff and
+      # writes a markdown report. `continue-on-error` lets us post the comment
+      # before failing so reviewers see the details even when the gate trips.
+      - name: Generate diff coverage report
+        if: github.event_name == 'pull_request'
+        id: diff-cover
+        continue-on-error: true
         run: |
-          COVERAGE_ARGS=$(echo "$CHANGED" | tr ',' '\n' | sed 's|^|--collectCoverageFrom=|' | tr '\n' ' ')
-          npx jest --coverage $COVERAGE_ARGS | tee ./coverage.txt
+          diff-cover ./coverage/lcov.info \
+            --compare-branch=origin/${{ github.base_ref }} \
+            --fail-under=80 \
+            --format markdown:diff-coverage.md
 
-      - name: Run Tests (no source changes)
-        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed != 'true'
-        run: npm test
-
-      - name: Post Coverage Comment
-        id: coverage
-        if: github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true'
-        uses: MishaKav/jest-coverage-comment@v1.0.29
+      - name: Post diff coverage comment
+        if: github.event_name == 'pull_request'
+        uses: marocchino/sticky-pull-request-comment@v2
         with:
-          title: Code Coverage (changed files)
-          coverage-summary-path: ./coverage/coverage-summary.json
-          coverage-path: ./coverage.txt
+          header: diff-coverage
+          path: ./diff-coverage.md
 
-      - name: Fail if coverage too low
-        if: ${{ github.event_name == 'pull_request' && steps.changed.outputs.any_changed == 'true' && steps.coverage.outputs.coverage < 80 }}
+      - name: Enforce diff coverage threshold
+        if: github.event_name == 'pull_request' && steps.diff-cover.outcome == 'failure'
         run: |
-          echo "Coverage for changed files is below 80%!"
+          echo "Diff coverage is below 80% - see the PR comment for details."
           exit 1
