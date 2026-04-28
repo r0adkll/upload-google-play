@@ -21,6 +21,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | serviceAccountJson | The service account json private key file to authorize the upload request. Can be used instead of `serviceAccountJsonPlainText` to specify a file rather than provide a secret | A path to a valid `service-account.json` file | true (or serviceAccountJsonPlainText) |
 | existingEditId | The ID of an existing edit that has not been completed. If this is supplied, the action will append information to that rather than creating an edit | A valid, unpublished Edit ID | false |
 | versionCodesToRetain | Version codes to retain from previous releases. | Comma-separated version codes. | false |
+| commitChanges | Whether to commit the edit at the end of the action. Set to `false` to leave the edit open so a subsequent step can append to it via `existingEditId`. Defaults to `true`. | `true` or `false` | false |
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
 | ~~track~~ | Please switch to using `tracks` as this will be removed in the future | | false |
 
@@ -32,6 +33,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | internalSharingDownloadUrl | INTERNAL_SHARING_DOWNLOAD_URL | The download url for the last release file uploaded using the `internalsharing` track |
 committedEditId | COMMITTED_EDIT_ID | The unique identifier of the committed edit. |
 committedEditIdExpiryTimeSeconds | COMMITTED_EDIT_ID_EXPIRY_TIME_SECONDS | Time in seconds until the committed edit expires. |
+| editId |   | The edit ID used for this run. Set whether or not the edit was committed. Pass to a follow-up step via `existingEditId`. |
  
 
 ## Example usage
@@ -51,6 +53,33 @@ with:
   whatsNewDirectory: distribution/whatsnew
   mappingFile: app/build/outputs/mapping/release/mapping.txt
   debugSymbols: app/intermediates/merged_native_libs/release/out/lib
+```
+
+### Uploading multiple bundles to the same release
+
+To bundle artifacts (e.g. mobile + TV variants) into a single release, run the first upload with `commitChanges: false` and reuse the resulting `editId` in the next step:
+
+```yaml
+- name: Upload mobile to Play Store
+  id: upload_mobile
+  uses: r0adkll/upload-google-play@v1
+  with:
+    serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+    packageName: com.example.MyApp
+    releaseFiles: app-mobile/build/outputs/bundle/release/*.aab
+    track: internal
+    status: draft
+    commitChanges: false
+
+- name: Upload TV to Play Store
+  uses: r0adkll/upload-google-play@v1
+  with:
+    serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+    packageName: com.example.MyApp
+    releaseFiles: app-tv/build/outputs/bundle/release/*.aab
+    track: internal
+    status: draft
+    existingEditId: ${{ steps.upload_mobile.outputs.editId }}
 ```
 
 ## Configure access via service account

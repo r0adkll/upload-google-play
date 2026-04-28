@@ -59,9 +59,15 @@ inputs:
   versionCodesToRetain:
     description: "Version codes to retain from previous releases. Separated by a ','."
     required: false
+  commitChanges:
+    description: "Whether to commit the edit at the end of the action. Set to 'false' to leave the edit open so a subsequent step can append to it via 'existingEditId'."
+    default: 'true'
+    required: false
 outputs:
   internalSharingDownloadUrl:
     description: "The internal app sharing download url if track was 'internalsharing'"
+  editId:
+    description: "The edit ID used for this run. Set whether or not the edit was committed. Use this with 'existingEditId' in a subsequent step."
 runs:
   using: 'node24'
   main: 'lib/index.js'

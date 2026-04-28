@@ -38,6 +38,7 @@ export async function run() {
             ?.filter(x => x !== '')
             ?.map(x => parseInt(x))
             ?.filter(x => !Number.isNaN(x));
+        const commitChanges = core.getInput('commitChanges', { required: false }) != 'false';
 
         await validateServiceAccountJson(serviceAccountJsonRaw, serviceAccountJson)
 
@@ -92,7 +93,8 @@ export async function run() {
                 existingEditId,
                 status,
                 validatedReleaseFiles,
-                versionCodesToRetain
+                versionCodesToRetain,
+                commitChanges
             ),
             {
                 milliseconds: 3.6e+6
