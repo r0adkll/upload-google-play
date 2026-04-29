@@ -30,11 +30,50 @@ jest.mock('@googleapis/androidpublisher', () => ({
 
 import { runUpload } from '../src/edits'
 
+type RunUploadOverrides = {
+    packageName?: string
+    tracks?: string[]
+    inAppUpdatePriority?: number
+    userFraction?: number
+    whatsNewDir?: string
+    mappingFile?: string
+    debugSymbols?: string
+    name?: string
+    changesNotSentForReview?: boolean
+    existingEditId?: string
+    status?: string
+    validatedReleaseFiles?: string[]
+    versionCodesToRetain?: number[]
+    commitChanges?: boolean
+}
+
+const callRunUpload = (overrides: RunUploadOverrides = {}) => runUpload(
+    overrides.packageName ?? 'com.package.name',
+    overrides.tracks ?? ['production'],
+    overrides.inAppUpdatePriority,
+    overrides.userFraction,
+    overrides.whatsNewDir,
+    overrides.mappingFile,
+    overrides.debugSymbols,
+    overrides.name,
+    overrides.changesNotSentForReview ?? false,
+    overrides.existingEditId,
+    overrides.status ?? 'completed',
+    overrides.validatedReleaseFiles ?? ['./__tests__/releasefiles/release.aab'],
+    overrides.versionCodesToRetain,
+    overrides.commitChanges ?? true,
+)
+
 describe('runUpload commitChanges flag', () => {
     let setOutputSpy: jest.SpyInstance
+    let setFailedSpy: jest.SpyInstance
     let infoSpy: jest.SpyInstance
 
     beforeEach(() => {
+        editsInsertMock.mockResolvedValue({
+            status: 200,
+            data: { id: 'newly-created-edit-id', expiryTimeSeconds: '54321' }
+        })
         tracksListMock.mockResolvedValue({
             status: 200,
             data: { tracks: [{ track: 'production' }] }
@@ -47,53 +86,54 @@ describe('runUpload commitChanges flag', () => {
             data: { id: 'committed-id', expiryTimeSeconds: '12345' }
         })
         setOutputSpy = jest.spyOn(core, 'setOutput').mockImplementation(() => { /* swallow */ })
+        setFailedSpy = jest.spyOn(core, 'setFailed').mockImplementation(() => { /* swallow */ })
         infoSpy = jest.spyOn(core, 'info').mockImplementation(() => { /* swallow */ })
         jest.spyOn(core, 'debug').mockImplementation(() => { /* swallow */ })
         jest.spyOn(core, 'exportVariable').mockImplementation(() => { /* swallow */ })
     })
 
-    test('with commitChanges=false, exposes editId output and skips the commit', async () => {
-        await runUpload(
-            'com.package.name',
-            ['production'],
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            false,
-            'existing-edit-id-123',
-            'completed',
-            ['./__tests__/releasefiles/release.aab'],
-            undefined,
-            false
-        )
+    afterEach(() => {
+        jest.restoreAllMocks()
+    })
 
+    test('with commitChanges=false and an existing edit, exposes editId, runs upload, and skips commit', async () => {
+        await callRunUpload({
+            existingEditId: 'existing-edit-id-123',
+            commitChanges: false,
+        })
+
+        expect(editsInsertMock).not.toHaveBeenCalled()
+        expect(bundlesUploadMock).toHaveBeenCalled()
+        expect(tracksUpdateMock).toHaveBeenCalled()
         expect(setOutputSpy).toHaveBeenCalledWith('editId', 'existing-edit-id-123')
         expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('Skipping commit'))
         expect(editsCommitMock).not.toHaveBeenCalled()
+        expect(setFailedSpy).not.toHaveBeenCalled()
     })
 
-    test('with commitChanges=true, commits the edit', async () => {
-        await runUpload(
-            'com.package.name',
-            ['production'],
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            undefined,
-            false,
-            'existing-edit-id-456',
-            'completed',
-            ['./__tests__/releasefiles/release.aab'],
-            undefined,
-            true
-        )
+    test('with commitChanges=false and no existing edit, creates a new edit and exposes its id', async () => {
+        await callRunUpload({ commitChanges: false })
 
+        expect(editsInsertMock).toHaveBeenCalled()
+        expect(setOutputSpy).toHaveBeenCalledWith('editId', 'newly-created-edit-id')
+        expect(editsCommitMock).not.toHaveBeenCalled()
+        expect(setFailedSpy).not.toHaveBeenCalled()
+    })
+
+    test('with commitChanges=true and an existing edit, commits that edit and exposes the committed id', async () => {
+        await callRunUpload({
+            existingEditId: 'existing-edit-id-456',
+            commitChanges: true,
+        })
+
+        expect(editsInsertMock).not.toHaveBeenCalled()
         expect(setOutputSpy).toHaveBeenCalledWith('editId', 'existing-edit-id-456')
-        expect(editsCommitMock).toHaveBeenCalled()
+        expect(editsCommitMock).toHaveBeenCalledWith(expect.objectContaining({
+            editId: 'existing-edit-id-456',
+            packageName: 'com.package.name',
+            changesNotSentForReview: false,
+        }))
+        expect(setOutputSpy).toHaveBeenCalledWith('committedEditId', 'committed-id')
+        expect(setFailedSpy).not.toHaveBeenCalled()
     })
 })
