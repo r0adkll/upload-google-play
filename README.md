@@ -24,6 +24,24 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
 | ~~track~~ | Please switch to using `tracks` as this will be removed in the future | | false |
 
+### Using `tracks` (recommended)
+
+The `track` input is deprecated. Use `tracks` instead.
+
+- Single track:
+
+```yaml
+with:
+  tracks: production
+```
+
+- Multiple tracks (comma-separated):
+
+```yaml
+with:
+  tracks: internal,qa
+```
+
 ## Outputs
 
 | Output | Environment Variable | Description |
@@ -44,7 +62,7 @@ with:
   serviceAccountJsonPlainText: ${{ SERVICE_ACCOUNT_JSON }}
   packageName: com.example.MyApp
   releaseFiles: app/build/outputs/bundle/release/app-release.aab
-  track: production
+  tracks: production
   status: inProgress
   inAppUpdatePriority: 2
   userFraction: 0.33
@@ -110,7 +128,7 @@ Before you can target `production`, push at least one release through an earlier
 uses: r0adkll/upload-google-play@v1
 with:
   # ... other configurations ...
-  track: internal
+  tracks: internal
 ```
 
 #### Edit conflict
