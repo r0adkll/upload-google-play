@@ -4,6 +4,7 @@
   "private": true,
   "description": "Upload an Android release (.apk or .aab) to Google Play Console",
   "main": "lib/index.js",
+  "type": "module",
   "scripts": {
     "build": "ncc build src/main.ts -m -o lib/",
     "test": "jest",
@@ -21,7 +22,7 @@
   "author": "r0adkll",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^2.0.3",
+    "@actions/core": "^3.0.1",
     "@googleapis/androidpublisher": "^35.3.0",
     "fast-glob": "^3.3.3",
     "google-auth-library": "^10.6.2",

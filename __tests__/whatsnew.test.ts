@@ -1,4 +1,4 @@
-import {readLocalizedReleaseNotes} from "../src/whatsnew";
+import {readLocalizedReleaseNotes} from "../src/whatsnew.js";
 
 test("read localized whatsnew files", async () => {
     let texts = await readLocalizedReleaseNotes("./__tests__/whatsnew");
