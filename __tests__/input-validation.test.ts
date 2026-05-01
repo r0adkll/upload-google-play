@@ -4,7 +4,7 @@ import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, vali
 test("invalid in-app update priority fails validation", async () => {
     const testValues = [-1, 6, -1000, 1000]
     for (const value of testValues) {
-        await expect(validateInAppUpdatePriority(value)).rejects.toThrowError()
+        await expect(validateInAppUpdatePriority(value)).rejects.toThrow()
     }
 })
 
@@ -17,7 +17,7 @@ test("valid in-app update priority passes validation", async () => {
 
 test("invalid releaseFiles glob fails validation", async () => {
     const testValues = ['./__tests__/releasefiles/*.null', `./__tests__/releasefiles/nonexistent-release.aab`]
-    await expect(validateReleaseFiles(undefined, testValues)).rejects.toThrowError()
+    await expect(validateReleaseFiles(undefined, testValues)).rejects.toThrow()
 })
 
 test("valid releaseFiles glob passes validation", async () => {
@@ -35,14 +35,14 @@ test("fractionless status without fraction passes validation", async () => {
 test("fractionless status with fraction fails validation", async () => {
     const testValues = ['completed', 'draft']
     for (const value of testValues) {
-        await expect(validateStatus(value, true)).rejects.toThrowError()
+        await expect(validateStatus(value, true)).rejects.toThrow()
     }
 })
 
 test("fractioned status without fraction fails validation", async () => {
     const testValues = ['inProgress', 'halted']
     for (const value of testValues) {
-        await expect(validateStatus(value, false)).rejects.toThrowError()
+        await expect(validateStatus(value, false)).rejects.toThrow()
     }
 })
 
@@ -56,14 +56,14 @@ test("fractioned status with fraction passes validation", async () => {
 test("invalid status fails validation", async () => {
     const testValues = ['statusGoBrrr', undefined]
     for (const value of testValues) {
-        await expect(validateStatus(value, true)).rejects.toThrowError()
+        await expect(validateStatus(value, true)).rejects.toThrow()
     }
 })
 
 test("invalid user fraction fails validation", async () => {
     const testValues = [0, 1, -1, 2, NaN]
     for (const value of testValues) {
-        await expect(validateUserFraction(value)).rejects.toThrowError()
+        await expect(validateUserFraction(value)).rejects.toThrow()
     }
 })
 
@@ -98,7 +98,7 @@ describe("validateTracks", () => {
     })
 
     test("setting both 'track' and 'tracks' rejects with a clear error", async () => {
-        await expect(validateTracks("internal", ["production"])).rejects.toThrowError(
+        await expect(validateTracks("internal", ["production"])).rejects.toThrow(
             "Cannot set both 'track' and 'tracks'. 'track' is deprecated — please migrate fully to 'tracks'."
         )
     })
@@ -140,13 +140,13 @@ describe("validateReleaseFiles", () => {
     })
 
     test("setting both 'releaseFile' and 'releaseFiles' rejects with a clear error", async () => {
-        await expect(validateReleaseFiles(validFile, [validGlob])).rejects.toThrowError(
+        await expect(validateReleaseFiles(validFile, [validGlob])).rejects.toThrow(
             "Cannot set both 'releaseFile' and 'releaseFiles'. 'releaseFile' is deprecated — please migrate fully to 'releaseFiles'."
         )
     })
 
     test("omitting both rejects with a 'must provide' error", async () => {
-        await expect(validateReleaseFiles(undefined, [])).rejects.toThrowError(
+        await expect(validateReleaseFiles(undefined, [])).rejects.toThrow(
             "You must provide 'releaseFiles' in your configuration"
         )
     })
