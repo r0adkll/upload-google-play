@@ -21,7 +21,7 @@
   "author": "r0adkll",
   "license": "MIT",
   "dependencies": {
-    "@actions/core": "^1.11.1",
+    "@actions/core": "^2.0.3",
     "@googleapis/androidpublisher": "^12.1.0",
     "fast-glob": "^3.3.2",
     "google-auth-library": "^9.15.0",
@@ -33,7 +33,7 @@
     "@types/node": "^25.6.0",
     "@typescript-eslint/eslint-plugin": "^8.59.1",
     "@typescript-eslint/parser": "^8.59.1",
-    "@vercel/ncc": "^0.38.1",
+    "@vercel/ncc": "^0.38.4",
     "eslint": "^10.2.1",
     "github-action-ts-run-api": "^3.1.0",
     "jest": "^30.3.0",
