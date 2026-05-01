@@ -31,7 +31,8 @@ export interface EditOptions {
     status: string;
     changesNotSentForReview?: boolean;
     existingEditId?: string;
-    versionCodesToRetain?: number[]
+    versionCodesToRetain?: number[];
+    commitChanges?: boolean;
 }
 
 export async function runUpload(
@@ -47,7 +48,8 @@ export async function runUpload(
     existingEditId: string | undefined,
     status: string,
     validatedReleaseFiles: string[],
-    versionCodesToRetain: number[] | undefined
+    versionCodesToRetain: number[] | undefined,
+    commitChanges: boolean
 ) {
     const auth = new google.auth.GoogleAuth({
         scopes: ['https://www.googleapis.com/auth/androidpublisher']
@@ -66,7 +68,8 @@ export async function runUpload(
         changesNotSentForReview: changesNotSentForReview,
         existingEditId: existingEditId,
         status: status,
-        versionCodesToRetain: versionCodesToRetain
+        versionCodesToRetain: versionCodesToRetain,
+        commitChanges: commitChanges
     }, validatedReleaseFiles);
 
     if (result) {
@@ -87,6 +90,7 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
     } else {
         // Create a new Edit
         const appEditId = await getOrCreateEdit(options)
+        core.setOutput("editId", appEditId);
 
         // Validate the given track
         await validateSelectedTracks(appEditId, options)
@@ -107,6 +111,11 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         // Add the uploaded artifacts to the Edit track
         await addReleasesToTracks(appEditId, options, combinedVersionCodes);
 
+        if (options.commitChanges === false) {
+            core.info(`Skipping commit; edit ${appEditId} is left open. Pass it to a follow-up step via 'existingEditId'.`)
+            return appEditId
+        }
+
         // Commit the pending Edit
         core.info(`Committing the Edit`)
         const res = await androidPublisher.edits.commit({
@@ -119,13 +128,13 @@ async function uploadToPlayStore(options: EditOptions, releaseFiles: string[]): 
         // Simple check to see whether commit was successful
         if (res.data.id) {
             core.info(`Successfully committed ${res.data.id}`);
-		
+
             core.setOutput("committedEditId", res.data.id);
             core.setOutput("commitedEditIdExpiryTimeSeconds", res.data.expiryTimeSeconds);
 
             core.exportVariable("COMMITED_EDIT_ID", res.data.id);
             core.exportVariable("COMMITED_EDIT_ID_EXPIRY_IN_TIME_SECONDS", res.data.expiryTimeSeconds);
-		
+
             return res.data.id
         } else {
             core.setFailed(`Error ${res.status}: ${res.statusText}`);

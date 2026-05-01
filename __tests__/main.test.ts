@@ -103,7 +103,8 @@ test("correct inputs for draft rollout", async () => {
             status: "draft",
             whatsNewDir: "./__tests__/whatsnew",
             changesNotSentForReview: "true",
-            existingEditId: "123"
+            existingEditId: "123",
+            commitChanges: "false"
         })
     await expectRunInitiatesUpload(extraOptions)
 })
