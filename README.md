@@ -24,7 +24,7 @@ This action will help you upload an Android `.apk` or `.aab` (Android App Bundle
 | ~~releaseFile~~ | Please switch to using `releaseFiles` as this will be removed in the future | | false |
 | ~~track~~ | Please switch to using `tracks` as this will be removed in the future | | false |
 
-### Using `tracks` (recommended)
+### Using `tracks`
 
 The `track` input is deprecated. Use `tracks` instead.
 
