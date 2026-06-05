@@ -1,5 +1,5 @@
 import * as core from "@actions/core"
-import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateTracks, validateUserFraction } from "../src/input-validation"
+import { validateInAppUpdatePriority, validateReleaseFiles, validateStatus, validateTracks, validateUserFraction } from "../src/input-validation.js"
 
 test("invalid in-app update priority fails validation", async () => {
     const testValues = [-1, 6, -1000, 1000]

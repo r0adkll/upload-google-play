@@ -13,8 +13,8 @@ import Apk = androidpublisher_v3.Schema$Apk;
 import Bundle = androidpublisher_v3.Schema$Bundle;
 import Track = androidpublisher_v3.Schema$Track;
 import InternalAppSharingArtifact = androidpublisher_v3.Schema$InternalAppSharingArtifact;
-import { GoogleAuth } from "google-auth-library/build/src/auth/googleauth"
-import { readLocalizedReleaseNotes } from "./whatsnew";
+import { GoogleAuth } from "google-auth-library"
+import { readLocalizedReleaseNotes } from "./whatsnew.js";
 
 const androidPublisher: AndroidPublisher = google.androidpublisher('v3');
 
