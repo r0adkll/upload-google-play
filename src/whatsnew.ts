@@ -9,17 +9,17 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
     core.debug(`Executing readLocalizedReleaseNotes`);
     if (whatsNewDir != undefined && whatsNewDir.length > 0) {
         const releaseNotes = fs.readdirSync(whatsNewDir)
-            .filter(value => /whatsnew-((.*-.*)|(.*))\b/.test(value));
-        const pattern = /whatsnew-(?<local>(.*-.*)|(.*))/;
+            .filter(value => /whatsnew-.*(\.txt)?$/.test(value));
+        const pattern = /whatsnew-(?<local>((.*-.*)|(.*?)))(\.txt)?$/;
 
         const localizedReleaseNotes: LocalizedText[] = [];
 
         core.debug(`Found files: ${releaseNotes.toString()}`);
         for (const value of releaseNotes) {
             const matches = value.match(pattern);
-            if (matches != null && matches.length == 4) {
+            if (matches && matches.groups?.local) {
                 core.debug(`Matches for ${value} = ${matches.toString()}`);
-                const lang = matches[1];
+                const lang = path.basename(value, path.extname(value)).replace(/^whatsnew-/, "");
                 const filePath = path.join(whatsNewDir, value);
                 const content = await readFile(filePath, 'utf-8');
 
