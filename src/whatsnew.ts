@@ -10,7 +10,7 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
     if (whatsNewDir != undefined && whatsNewDir.length > 0) {
         const releaseNotes = fs.readdirSync(whatsNewDir)
             .filter(value => /whatsnew-.*(\.txt)?$/.test(value));
-        const pattern = /whatsnew-(?<local>((.*-.*)|(.*?)))(\.txt)?$/;
+        const pattern = /^whatsnew-(?<local>.+?)(?:\.txt)?$/;
 
         const localizedReleaseNotes: LocalizedText[] = [];
 
@@ -19,7 +19,7 @@ export async function readLocalizedReleaseNotes(whatsNewDir: string | undefined)
             const matches = value.match(pattern);
             if (matches && matches.groups?.local) {
                 core.debug(`Matches for ${value} = ${matches.toString()}`);
-                const lang = path.basename(value, path.extname(value)).replace(/^whatsnew-/, "");
+                const lang = matches.groups.local;
                 const filePath = path.join(whatsNewDir, value);
                 const content = await readFile(filePath, 'utf-8');
 
