@@ -2,7 +2,7 @@ import {readLocalizedReleaseNotes} from "../src/whatsnew";
 
 test("read localized whatsnew files", async () => {
     let texts = await readLocalizedReleaseNotes("./__tests__/whatsnew");
-    expect(texts).toHaveLength(6);
+    expect(texts).toHaveLength(7);
     expect(texts).toContainEqual({
         language: "en-US",
         text: "test_changelog_file"
@@ -26,5 +26,9 @@ test("read localized whatsnew files", async () => {
     expect(texts).toContainEqual({
         language: "et",
         text: "test_changelog_file_estonian"
+    });
+    expect(texts).toContainEqual({
+        language: "fr-FR",
+        text: "test_changelog_file_french"
     });
 });
