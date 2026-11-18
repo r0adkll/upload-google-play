@@ -227,23 +227,23 @@ async function addReleasesToTracks(appEditId: string, options: EditOptions, vers
     return tracks;
 }
 
-async function uploadMappingFile(appEditId: string, versionCode: number, options: EditOptions) {
+export async function uploadMappingFile(appEditId: string, versionCode: number, options: EditOptions) {
     if (options.mappingFile != undefined && options.mappingFile.length > 0) {
-        const mapping = readFileSync(options.mappingFile, 'utf-8');
-        if (mapping != undefined) {
-            core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Proguard mapping file @ ${options.mappingFile}`);
-            await androidPublisher.edits.deobfuscationfiles.upload({
-                auth: options.auth,
-                packageName: options.applicationId,
-                editId: appEditId,
-                apkVersionCode: versionCode,
-                deobfuscationFileType: 'proguard',
-                media: {
-                    mimeType: 'application/octet-stream',
-                    body: fs.createReadStream(options.mappingFile)
-                }
-            })
-        }
+        // Check that the file is readable without loading it into memory: R8 mapping files of large
+        // apps can exceed Node's maximum string length (~512 MB), which makes readFileSync throw.
+        fs.accessSync(options.mappingFile, fs.constants.R_OK);
+        core.debug(`[${appEditId}, versionCode=${versionCode}, packageName=${options.applicationId}]: Uploading Proguard mapping file @ ${options.mappingFile}`);
+        await androidPublisher.edits.deobfuscationfiles.upload({
+            auth: options.auth,
+            packageName: options.applicationId,
+            editId: appEditId,
+            apkVersionCode: versionCode,
+            deobfuscationFileType: 'proguard',
+            media: {
+                mimeType: 'application/octet-stream',
+                body: fs.createReadStream(options.mappingFile)
+            }
+        })
     }
 }
 

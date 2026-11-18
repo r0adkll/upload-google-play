@@ -1,0 +1,2 @@
+com.example.Foo -> a:
+    void bar() -> b
